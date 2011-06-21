@@ -7,6 +7,27 @@ FileUtil::FileUtil(int rank, int size) {
 	this->mSize = size;
 }
 
+int* FileUtil::makeHistogram(char *word, int line_number) {
+	int len = strlen(word);
+	
+	int *histogram = (int*) malloc(sizeof(int) * (26+1));
+	for (int i = 0 ; i < 27 ; i++) {
+		histogram[i] = 0;
+	}
+	
+	
+	for (int i = 0; i< len; i++) {
+		word[i] = tolower(word[i]);
+		if (word[i] >= 'a' && word[i] <= 'z') {
+			histogram[word[i]-'a']++;
+		}
+	}
+	
+	histogram[26] = line_number;
+	
+	return histogram;
+}
+
 // reads all lines at positions (given by a list) within file
 // NOT USED, PERHAPS LATER!!!
 list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
@@ -41,32 +62,38 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 }
 
 // read all words from a file
-list<char*>* FileUtil::readFile() {
-	ifstream is;
+list<int*>* FileUtil::readFile() {
+	cout << "call read file" << endl;
+	
 	string name = "./sortMe.txt";
 	
-	is.open(name.c_str(), ifstream::in);
+	ifstream is (name.c_str(), ifstream::in);
+
+	if (is.fail()) {
+		cout << "File: "<< name << " not found!" << endl;
+		return new list<int*>();
+	}
 
 	// 1) determine the length of the file
 	is.seekg(0, ios::end);
 	const int length = is.tellg();
-	//cout << "file contains " << length << " characters" << endl;
+	cout << "file contains " << length << " characters" << endl;
 
 	/* 	2) devide the number of characters of the number of prozesses
 		rundungsfehler sollten egal sein, da immer bis zur letzten Zeile gesprungen wird!
 		int nimmt nur die Zahl vor dem Komma */
 	int i = length / this->mSize;
-	//cout << "characters to be read by this prozess: " << i << endl;
+	cout << "characters to be read by this prozess: " << i << endl;
 		
 	// 3) calculate from pos
 	int from = mRank * i;
-	//cout << "from: " << from << endl;
+	cout << "from: " << from << endl;
 	// 4) calculate to pos
 	int to = ((mRank+1) * i);
-	//cout << "to: " << to << endl;
+	cout << "to: " << to << endl;
 	
-	char c;
-	
+	int c;
+	cout << "5)" << endl;
 	// 5) if this is not he first prozess
 	// determin real from position
 	if (mRank != 0) {
@@ -74,25 +101,29 @@ list<char*>* FileUtil::readFile() {
 		// read chars while line break has found
 		do {
 			c = (char) is.get();
-		} while (c != '\n');
+		} while (c != 10);
 		// after line break has found, the next char is the first char in next line
 		// new from position is from here
 		from = is.tellg();
 	}
 
+	cout << "6)" << endl;
 	// 6) if this is not the last prozess
 	// determine real to position
 	if (mRank != (mSize-1)) {
+		cout << "6.1)" << endl;
 		is.seekg(to, ios::beg);
 		// read chars while line break has found
 		do {
-			c = (char) is.get();		
-		} while (c != '\n');
+			c = is.get();
+			//cout << c << endl;		
+		} while (c != 10);
 		// after line break has found, the next char is the first char in next line
 		// go back to before the line break.
 		to = is.tellg();
 		to--;
 	} else {
+		cout << "6.2)" << endl;
 		is.seekg(0, ios::end);
 		to = is.tellg();
 	}
@@ -110,30 +141,34 @@ list<char*>* FileUtil::readFile() {
 	//cout << "start reading at char pos: " << is.tellg() << endl;
  
   cout << "start to read from file..." << endl;
-  list<char*> *words = new list<char*>();
-
+  //list<char*> *words = new list<char*>();
+	list<int*> *histogram_list = new list<int*>();
+	
 	int index = 1;
 	do {
 		string s; // temp string, just to determine the line length
 		getline(is, s, '\n'); // get the line until line break
 
-    // alloc an char array with length of string
+    	// alloc an char array with length of string
 		char *word = (char*) malloc(sizeof(char) * s.length()+1);
 		strcpy(word, s.c_str()); // copy string
 
-    // insert word in list
-		words->push_back(word);
-
+    	// insert word in list
+		//words->push_back(word);
+		histogram_list->push_back(makeHistogram(word, index));
+		
+		free(word);
     
 		if (index % 100000 == 0) {
 		  cout << index << endl;
 			//cout << "length: " << s.length() << endl;
 			//cout << "word: " << word << endl;
 		}
+		
 		index++;
 	} while (is.tellg() <= to && is.good());
 
-	return words;
+	return histogram_list;
 }
 
 // print all words in list

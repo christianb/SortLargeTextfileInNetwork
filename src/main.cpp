@@ -26,6 +26,27 @@ void sendIntegerListToNode(int node, list<int*> *data) {
 	}
 }
 
+void sendHistogram(int node, list<int*> *data) {
+	cout << "call sendHistogram(" << node << ")" << endl;
+	int size = data->size();
+	
+	// First send the total number of elements in the vector
+	MPI_Send (&size,1,MPI_INT,node,0,MPI_COMM_WORLD);
+	
+	cout << "send size = " << size << endl;
+	
+	int c = 1;
+	for (list<int*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
+		// send the int*
+		MPI_Send(*l_it, 27,MPI_INT,node,0,MPI_COMM_WORLD);
+		
+		if (c % 100000 == 0) {cout << c << endl;}
+		c++;
+	}
+	
+	cout << "done send." << endl;
+}
+
 void sendListToNode(int node, list<char*> *data) {
 	cout << "call sendListToNode(" << node << ")" << endl;
 	int size = data->size();
@@ -50,6 +71,34 @@ void sendListToNode(int node, list<char*> *data) {
 	} 
 	
 	cout << "send done!" << endl;
+	
+}
+
+list<int*>* receiveHistogram(int node) {
+	cout << "call receiveHistogram(" << node << ")" << endl;
+	MPI_Status status;
+	// First receive the size of the vector
+	int size = 0;
+	MPI_Recv (&size,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+	
+	cout << "received that " << size << " elements will come..." << endl;
+	
+	int c = 1;
+	list<int*>* int_list = new list<int*>();
+	for(int i = 0; i < size; i++) {
+		int *value = (int*) malloc(sizeof(int) * (26+1));
+		
+		MPI_Recv (value,27,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+		
+		//cout << "received int: " << *value << endl;
+		int_list->push_back(value);
+		
+		if (c % 100000 == 0) {cout << c << endl;}
+		c++;	
+	}
+	
+	cout << "done receive." << endl;
+	return int_list;
 	
 }
 
@@ -108,9 +157,17 @@ list<char*>* receiveListFromNode(int node) {
 	return data;
 }
 
+void printHistogram(int* histogram) {
+	for (int i = 0 ; i < 26 ; i++) {
+		int c = 'a' + i;
+		cout << "[" << (char) c << "] = " <<  histogram[i] << endl;
+	}
+	
+	cout << "line_number = " << histogram[26] << endl;
+ }
+
 
 int main (int argc, char *argv[]) {
-
 	int myrank;
  	int size;
 
@@ -133,32 +190,39 @@ int main (int argc, char *argv[]) {
 		
 		//list<int*> *cursors = futil->readFilePositions();
 		//list<char*> *words = futil->readAllPosition(cursors);
-		list<char*> *words = futil->readFile();
+		list<int*> *histogram_list = futil->readFile();
 	
+		printHistogram(histogram_list->back());
 
 		endTime = MPI_Wtime();
 		timeUsed = endTime - startTime;
 		cout << "time used to read file:" << timeUsed << endl;
 		startTime = MPI_Wtime();
 
-		cout << "words in list: " << words->size() << endl;
+		//cout << "histogramme in list: " << histogram_list->size() << endl;
 
 		// Zeit messen wie lange das einlesen der Datei benötigt.
 		
 		// Anschließend an Knoten 1 das Array senden
-    sendListToNode(1, words);
+    	//sendListToNode(1, words);
 		//sendIntegerListToNode(1, int_list);
+		sendHistogram(1, histogram_list);
 		endTime = MPI_Wtime();
 		timeUsed = endTime - startTime;
 		
 		cout << "time used to send file:" << timeUsed << endl;
 	} else {
+		if (myrank == 1) {
 		// warten auf anazhl der wörter
 		// SChleife jedes wort einlesen
 		// wie lange ist das wort
 		// lese zeichen ein
 		//receiveIntegerListFromNode(0);
-		receiveListFromNode(0);
+		//receiveListFromNode(0);
+			list<int*> *histogram = receiveHistogram(0);
+		
+			printHistogram(histogram->back());
+		}
 	}
 
  	MPI_Finalize();
