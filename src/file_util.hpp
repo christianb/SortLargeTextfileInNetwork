@@ -13,6 +13,14 @@ using namespace std;
 class FileUtil {
 public:	
 
+/**
+ 	 * Construct a new FileUtil instance.
+
+	 * @param rank The rank of this prozess.
+	 * @param size The total number of prozesses.
+	 */
+	FileUtil(int rank, int size);
+
 list<char*>* readAllPosition(list<int*> *coursors);
 
 void printWords(list<char*> *words);
@@ -20,6 +28,10 @@ void printWords(list<char*> *words);
 list<int*>* readFilePositions();
 
 list<char*>* readFile();
+
+private:
+	int mRank;
+	int mSize;
 
 };
 

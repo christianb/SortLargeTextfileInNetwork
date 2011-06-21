@@ -2,7 +2,13 @@
 
 using namespace std;
 
-// reads all positions within list from a file
+FileUtil::FileUtil(int rank, int size) {
+	this->mRank = rank;
+	this->mSize = size;
+}
+
+// reads all lines at positions (given by a list) within file
+// NOT USED, PERHAPS LATER!!!
 list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 	cout << "read word at position" << endl;
 	ifstream is;
@@ -34,51 +40,112 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 	return words;
 }
 
+// read all words from a file
 list<char*>* FileUtil::readFile() {
 	ifstream is;
 	string name = "./sortMe.txt";
 	
 	is.open(name.c_str(), ifstream::in);
 
-	// stores for each line the coursor position
-	list<int*> *coursors = new list<int*>();
-	if (!is.eof()) {
-		coursors->push_back(new int(0));
+	// 1) determine the length of the file
+	is.seekg(0, ios::end);
+	const int length = is.tellg();
+	//cout << "file contains " << length << " characters" << endl;
+
+	/* 	2) devide the number of characters of the number of prozesses
+		rundungsfehler sollten egal sein, da immer bis zur letzten Zeile gesprungen wird!
+		int nimmt nur die Zahl vor dem Komma */
+	int i = length / this->mSize;
+	//cout << "characters to be read by this prozess: " << i << endl;
+		
+	// 3) calculate from pos
+	int from = mRank * i;
+	//cout << "from: " << from << endl;
+	// 4) calculate to pos
+	int to = ((mRank+1) * i);
+	//cout << "to: " << to << endl;
+	
+	char c;
+	
+	// 5) if this is not he first prozess
+	// determin real from position
+	if (mRank != 0) {
+		is.seekg(from, ios::beg);
+		// read chars while line break has found
+		do {
+			c = (char) is.get();
+		} while (c != '\n');
+		// after line break has found, the next char is the first char in next line
+		// new from position is from here
+		from = is.tellg();
 	}
 
-	list<char*> *words = new list<char*>();
+	// 6) if this is not the last prozess
+	// determine real to position
+	if (mRank != (mSize-1)) {
+		is.seekg(to, ios::beg);
+		// read chars while line break has found
+		do {
+			c = (char) is.get();		
+		} while (c != '\n');
+		// after line break has found, the next char is the first char in next line
+		// go back to before the line break.
+		to = is.tellg();
+		to--;
+	} else {
+		is.seekg(0, ios::end);
+		to = is.tellg();
+	}
 
-	int index = 1; 
-	while (!is.eof()) {
-					
-			
-		string s;
-		getline(is, s, '\n');
+	// now we have set the from and to position in the file
+	//cout << "read from " << from << " to " << to << endl;
 
+	// 7) before we can read the file we must determine how many chars we have to read now,
+	// because from and to position has changed.
+	//int new_length = to - from;
+	//cout << "new length to be read by this prozess: " << new_length << endl;
+	
+	// 8) read characters
+	is.seekg(from, ios::beg); // go where to start
+	//cout << "start reading at char pos: " << is.tellg() << endl;
+ 
+  cout << "start to read from file..." << endl;
+  list<char*> *words = new list<char*>();
+
+	int index = 1;
+	do {
+		string s; // temp string, just to determine the line length
+		getline(is, s, '\n'); // get the line until line break
+
+    // alloc an char array with length of string
 		char *word = (char*) malloc(sizeof(char) * s.length()+1);
-		strcpy(word, s.c_str());
+		strcpy(word, s.c_str()); // copy string
 
+    // insert word in list
 		words->push_back(word);
 
+    
 		if (index % 100000 == 0) {
-			//cout << index << endl;
+		  cout << index << endl;
 			//cout << "length: " << s.length() << endl;
 			//cout << "word: " << word << endl;
 		}
 		index++;
-	}
-
-	cout << words->front() << endl;
+	} while (is.tellg() <= to && is.good());
 
 	return words;
 }
 
+// print all words in list
+// NOT USED, PERHAPS LATER!!!
 void FileUtil::printWords(list<char*> *words) {
 	for (list<char*>::iterator it = words->begin(); it != words->end(); it++) {
 		cout << *it << endl;
 	}
 }
 
+// collect the cursor position where every line starts
+// NOT USED, PERHAPS LATER!!!
 list<int*>* FileUtil::readFilePositions() {
 	cout << "read cursor position from file" << endl;
 	ifstream is;

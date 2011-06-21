@@ -129,7 +129,7 @@ int main (int argc, char *argv[]) {
 		double startTime, endTime, timeUsed;
 		startTime = MPI_Wtime(); // set start time
 		
-		FileUtil *futil = new FileUtil();
+		FileUtil *futil = new FileUtil(myrank, size);
 		
 		//list<int*> *cursors = futil->readFilePositions();
 		//list<char*> *words = futil->readAllPosition(cursors);
@@ -146,7 +146,7 @@ int main (int argc, char *argv[]) {
 		// Zeit messen wie lange das einlesen der Datei benötigt.
 		
 		// Anschließend an Knoten 1 das Array senden
-		sendListToNode(1, words);
+    sendListToNode(1, words);
 		//sendIntegerListToNode(1, int_list);
 		endTime = MPI_Wtime();
 		timeUsed = endTime - startTime;
