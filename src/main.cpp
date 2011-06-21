@@ -7,6 +7,23 @@
 
 using namespace std;
 
+void sendIntegerListToNode(int node, list<int*> *data) {
+	cout << "call send int list" << endl;
+	int size = data->size();
+	// First send the total number of elements in the vector
+	MPI_Send (&size,1,MPI_INT,node,0,MPI_COMM_WORLD);
+	
+	
+	int c = 1;
+	for (list<int*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
+		// send the char*
+		MPI_Send (*l_it, 1,MPI_INT,node,0,MPI_COMM_WORLD);
+		
+		if (c % 100000 == 0) {cout << c << endl;}
+		c++;
+	}
+}
+
 void sendListToNode(int node, list<char*> *data) {
 	cout << "call sendListToNode(" << node << ")" << endl;
 	int size = data->size();
@@ -32,6 +49,28 @@ void sendListToNode(int node, list<char*> *data) {
 	
 	cout << "send done!" << endl;
 	
+}
+
+list<int*>* receiveIntegerListFromNode(int node) {
+	cout << "call receiveIntegerListFromNode(" << node << ")" << endl;
+	MPI_Status status;
+	// First receive the size of the vector
+	int size = 0;
+	MPI_Recv (&size,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+	cout << "receive length: " << size << endl;
+	
+	
+	int c = 1;
+	list<int*>* int_list = new list<int*>();
+	for(int i = 0; i < size; i++) {
+		int *value = (int*) malloc(sizeof(int)); 
+		MPI_Recv (value,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+		cout << "received int: " << *value << endl;
+		int_list->push_back(value);
+		
+		if (c % 100000 == 0) {cout << c << endl;}
+		c++;	
+	}
 }
 
 list<char*>* receiveListFromNode(int node) {
@@ -103,6 +142,7 @@ int main (int argc, char *argv[]) {
 		
 		int c = 0;
 		list<char*>* l = new list<char*>();
+		list<int*>* int_list = new list<int*>();
 		cout << "size: " << l->size() << endl;
 		while (!is.eof()) {
 			char *word = (char*) malloc(sizeof(char) * 128);			
@@ -111,10 +151,11 @@ int main (int argc, char *argv[]) {
 			//delete word;
 			//cout << " " << *s << " " << endl;	
 			l->push_back(word);	
+			int_list->push_back(new int(c));
 			
 			c++;
 	
-			if (c % 100000 == 0) { break; }
+			if (c % 1000 == 0) { break; }
 		}
 		
 		cout << "first:" << l->front() << endl;
@@ -130,13 +171,13 @@ int main (int argc, char *argv[]) {
 		// Zeit messen wie lange das einlesen der Datei benötigt.
 		
 		// Anschließend an Knoten 1 das Array senden
-			sendListToNode(1, l);
+			sendIntegerListToNode(1, int_list);
 	} else {
 		// warten auf anazhl der wörter
 		// SChleife jedes wort einlesen
 		// wie lange ist das wort
 		// lese zeichen ein
-		receiveListFromNode(0);
+		receiveIntegerListFromNode(0);
 	}
 
  	MPI_Finalize();
