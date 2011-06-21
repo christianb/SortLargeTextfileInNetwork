@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <string.h>
 
 using namespace std;
 
@@ -65,7 +66,7 @@ list<int*>* receiveIntegerListFromNode(int node) {
 	for(int i = 0; i < size; i++) {
 		int *value = (int*) malloc(sizeof(int)); 
 		MPI_Recv (value,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
-		cout << "received int: " << *value << endl;
+		//cout << "received int: " << *value << endl;
 		int_list->push_back(value);
 		
 		if (c % 100000 == 0) {cout << c << endl;}
@@ -143,41 +144,51 @@ int main (int argc, char *argv[]) {
 		int c = 0;
 		list<char*>* l = new list<char*>();
 		list<int*>* int_list = new list<int*>();
-		cout << "size: " << l->size() << endl;
+		
+		// stores for each line the cursor position to jump fast to that line
+		list<int*> cursors = new list<int*>();
+
+		cout << "read from file: " << endl;
 		while (!is.eof()) {
 			char *word = (char*) malloc(sizeof(char) * 128);			
 			is.getline(word, 128);
 			//string *s = new string(word);
 			//delete word;
 			//cout << " " << *s << " " << endl;	
-			l->push_back(word);	
-			int_list->push_back(new int(c));
+			//l->push_back(word);	
+			//int_list->push_back(new int(c));
 			
 			c++;
-	
-			if (c % 1000 == 0) { break; }
+			if (c % 100000 == 0) {cout << c << endl;}
+
+			//if (c % 10000000 == 0) { break; }
 		}
 		
-		cout << "first:" << l->front() << endl;
-		
-		cout << "size: " << l->size() << endl;
-			endTime = MPI_Wtime();
+		cout << "elements in list: " << l->size() << endl;
 
-			//cout << "s_array[0]" << s_array[0] << endl;
+		endTime = MPI_Wtime();
+		timeUsed = endTime - startTime;
+		cout << "time used to read file:" << timeUsed << endl;
+		startTime = MPI_Wtime();
 
-			timeUsed = endTime - startTime;
-			cout << "time used : " << timeUsed << endl;
-		
+
+
 		// Zeit messen wie lange das einlesen der Datei benötigt.
 		
 		// Anschließend an Knoten 1 das Array senden
-			sendIntegerListToNode(1, int_list);
+		//sendListToNode(1, l);
+		sendIntegerListToNode(1, int_list);
+		endTime = MPI_Wtime();
+		timeUsed = endTime - startTime;
+		
+		cout << "time used to send file:" << timeUsed << endl;
 	} else {
 		// warten auf anazhl der wörter
 		// SChleife jedes wort einlesen
 		// wie lange ist das wort
 		// lese zeichen ein
 		receiveIntegerListFromNode(0);
+		//receiveListFromNode(0);
 	}
 
  	MPI_Finalize();
