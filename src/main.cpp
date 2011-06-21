@@ -5,6 +5,7 @@
 #include <iostream>
 #include <list>
 #include <string.h>
+#include "file_util.hpp"
 
 using namespace std;
 
@@ -124,60 +125,29 @@ int main (int argc, char *argv[]) {
 
 	// if this is process zero than this is the master node, controlling all others
 	if (myrank == 0) {
+		// time variables
 		double startTime, endTime, timeUsed;
-		startTime = MPI_Wtime();
+		startTime = MPI_Wtime(); // set start time
 		
-		// Datei einlesen
-		ifstream is;
-		string name = "./sortMe.txt";
+		FileUtil *futil = new FileUtil();
 		
-		is.open(name.c_str(), ifstream::in);
-		
-		// if file not exist
-		if (!is) {
-			cout << "File not found" << endl;
-			return EXIT_SUCCESS;
-		}
-		
-		is.seekg(0, ios::beg);
-		
-		int c = 0;
-		list<char*>* l = new list<char*>();
-		list<int*>* int_list = new list<int*>();
-		
-		// stores for each line the cursor position to jump fast to that line
-		list<int*> cursors = new list<int*>();
-
-		cout << "read from file: " << endl;
-		while (!is.eof()) {
-			char *word = (char*) malloc(sizeof(char) * 128);			
-			is.getline(word, 128);
-			//string *s = new string(word);
-			//delete word;
-			//cout << " " << *s << " " << endl;	
-			//l->push_back(word);	
-			//int_list->push_back(new int(c));
-			
-			c++;
-			if (c % 100000 == 0) {cout << c << endl;}
-
-			//if (c % 10000000 == 0) { break; }
-		}
-		
-		cout << "elements in list: " << l->size() << endl;
+		//list<int*> *cursors = futil->readFilePositions();
+		//list<char*> *words = futil->readAllPosition(cursors);
+		list<char*> *words = futil->readFile();
+	
 
 		endTime = MPI_Wtime();
 		timeUsed = endTime - startTime;
 		cout << "time used to read file:" << timeUsed << endl;
 		startTime = MPI_Wtime();
 
-
+		cout << "words in list: " << words->size() << endl;
 
 		// Zeit messen wie lange das einlesen der Datei benötigt.
 		
 		// Anschließend an Knoten 1 das Array senden
-		//sendListToNode(1, l);
-		sendIntegerListToNode(1, int_list);
+		sendListToNode(1, words);
+		//sendIntegerListToNode(1, int_list);
 		endTime = MPI_Wtime();
 		timeUsed = endTime - startTime;
 		
@@ -187,8 +157,8 @@ int main (int argc, char *argv[]) {
 		// SChleife jedes wort einlesen
 		// wie lange ist das wort
 		// lese zeichen ein
-		receiveIntegerListFromNode(0);
-		//receiveListFromNode(0);
+		//receiveIntegerListFromNode(0);
+		receiveListFromNode(0);
 	}
 
  	MPI_Finalize();
