@@ -3,10 +3,13 @@
 
 using namespace std;
 
-list<char*>* Mergesort::sort(list<char*> *l){
-	list<char*> *leftList = new list<char*>();
-	list<char*> *rightList = new list<char*>();
-	list<char*> *result = new list<char*>();;
+list<unsigned char*>* Mergesort::sort(list<unsigned char*> *l){
+	cout << "call sort()" << endl;
+	cout << "list size = " << l->size();
+	
+	list<unsigned char*> *leftList = new list<unsigned char*>();
+	list<unsigned char*> *rightList = new list<unsigned char*>();
+	list<unsigned char*> *result = new list<unsigned char*>();;
 	
 	// Gesamtlänge und Mitte der Liste bestimmen
 	int listLength = l->size();
@@ -17,7 +20,7 @@ list<char*>* Mergesort::sort(list<char*> *l){
 		return l;
 	} else {
 		
-		list<char*>::iterator it;
+		list<unsigned char*>::iterator it;
 		it = l->begin();
 		
 		// Pointer auf Mitte der Liste setzen
@@ -38,29 +41,97 @@ list<char*>* Mergesort::sort(list<char*> *l){
 	}
 }
 
-list<char*>* Mergesort::merge(list<char*> *left, list<char*> *right){
-	//cout << "call merge()" << endl;
-	list<char*>* newList = new list<char*>(); // mergedList
-	list<char*>::iterator leftIt;
-	list<char*>::iterator rightIt;
+int Mergesort::getSumOfLetterCaseInsensitive(int indexLetter, unsigned char* histogram) {
+    if (indexLetter < 26) {
+        int upperCaseLetter = histogram[indexLetter];
+		int lowerCaseLetter = histogram[indexLetter+26];
+        
+        return (upperCaseLetter + lowerCaseLetter);
+    }
+    
+    return 0;
+}
+
+list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned char*> *right){
+	cout << "call merge()" << endl;
+	cout << "left size = " << left->size();
+	cout << "right size = " << right->size() << endl;
+	
+	list<unsigned char*>* newList = new list<unsigned char*>(); // mergedList
+	list<unsigned char*>::iterator leftIt;
+    list<unsigned char*>::iterator rightIt;
 	
 	
 	while (left->size() > 0 || right->size() > 0){
+		cout << "left and right is not empty!" << endl;
 		
 		// Pointer bei jedem durchlauf auf erstes Element setzen
 		leftIt = left->begin();
 		rightIt = right->begin();
 		
 				
-		if (left->size() > 0 && right->size() > 0){		// Beide Listen beinhalten noch Elemente
-			if (lessThan(*leftIt, *rightIt)){	
-				//cout << "compare: " << *leftIt << " and " << *rightIt << endl;				// Linkes Element als erstes in neue Liste einfügen, falls diese kleiner als rechtes Element ist
-				newList->push_back(*leftIt);				// Element einfügen
-				left->erase(leftIt);						// Eingefügtes Element aus alter Liste löschen
-			} else {									// Falls rechtes Element größer, dieses als erstes in neue Liste einfügen
-				newList->push_back(*rightIt);
-				right->erase(rightIt);
+		if (left->size() > 0 && right->size() > 0) {		// Beide Listen beinhalten noch Elemente
+            unsigned char *leftHistogram = *leftIt;
+            unsigned char *rightHistogram = *rightIt;
+            
+            // get sum and compare
+			bool didMerge = false;
+            for (int i = 0 ; i < 26 ; i++) {
+                int sumLeftHistogram = getSumOfLetterCaseInsensitive(i, leftHistogram);
+                int sumRightHistogram = getSumOfLetterCaseInsensitive(i, rightHistogram);
+
+                if (sumLeftHistogram < sumRightHistogram) {
+                    // ok rechtes Histogram kommt zuertst
+                    newList->push_back(rightHistogram);
+					right->erase(rightIt);
+					didMerge = true;
+                    break;  // stop comparing of this both histograms
+                }
+                
+                if (sumLeftHistogram > sumRightHistogram) {
+                    // ok linkes Histogram kommt zuerst;
+                    newList->push_back(leftHistogram);
+                    left->erase(leftIt);
+					didMerge = true;
+                    break;
+                }
+                
+                if (sumLeftHistogram == sumRightHistogram) {
+                    // schauen wer mehr kleine Buchstaben hat
+                    
+                    // anzahl der klein buchstaben
+                    int lowerCaseLetterLeftHistogram = leftHistogram[i+26];
+                    int lowerCaseLetterRightHistogram = rightHistogram[i+26];
+                    
+                    if (lowerCaseLetterRightHistogram > lowerCaseLetterLeftHistogram) {
+                        // ok rechtes Histogram kommt zuertst
+                        newList->push_back(rightHistogram);
+						right->erase(rightIt);
+						didMerge = true;
+                        break;  // stop comparing of this both histograms
+                    }
+                    
+                    if (lowerCaseLetterRightHistogram < lowerCaseLetterLeftHistogram) {
+                        // ok linkes Histogram kommt zuerst;
+                        newList->push_back(leftHistogram);
+                        left->erase(leftIt);
+						didMerge = true;
+                        break;
+                    }
+                    
+                    if (lowerCaseLetterLeftHistogram == lowerCaseLetterRightHistogram) {
+                        continue;
+                    }
+                }
+            }
+
+			// edge condition if both elements are absolut identical
+			if (!didMerge) {
+				newList->push_back(*leftIt);					// Dieses einfügen
+				left->erase(leftIt);
 			}
+            
+			
 		} else if ( left->size() > 0){					// Nur linke Liste enthält Elemente
 			newList->push_back(*leftIt);					// Dieses einfügen
 			left->erase(leftIt);							// und löschen
@@ -72,17 +143,3 @@ list<char*>* Mergesort::merge(list<char*> *left, list<char*> *right){
 	
 	return newList;
 }
-
-bool Mergesort::lessThan(char* s1, char *s2) {
-	if (lexicographical_compare(s1,s1+strlen(s1)-1,s2,s2+strlen(s2)-1)) {
-		return true;
-	} else {
-		return false;
-	}
-}
-/*
-bool compare (char c1, char c2)
-{ 
-	return tolower(c1) < tolower(c2) ;
-}
-*/

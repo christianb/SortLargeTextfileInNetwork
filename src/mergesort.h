@@ -11,14 +11,12 @@ using namespace std;
 class Mergesort {
 		
 public:
-	list<char*>* sort(list<char*> *l);
+	list<unsigned char*>* sort(list<unsigned char*> *l);
 
-	list<char*>* merge(list<char*> *left, list<char*> *right);
-	
-	bool lessThan(char* s1, char *s2);
+	list<unsigned char*>* merge(list<unsigned char*> *left, list<unsigned char*> *right);
 	
 private:
-	
+	int getSumOfLetterCaseInsensitive(int indexLetter, unsigned char* histogram);
 };
 
 #endif	/* _MERGESORT_H */

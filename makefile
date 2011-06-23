@@ -9,6 +9,7 @@ CFLAGS = -Wall -Wextra -g -DLexic_Compare
 # Files to be compiled
 OBJECTS = $(SRC)/main.o \
 $(SRC)/file_util.o \
+$(SRC)/mergesort.o \
 
 # program name 
 NAME = benchmark
@@ -24,7 +25,7 @@ TARGET = $(BIN)/$(NAME)
 
 install: clean compile
 
-compile: main.o fileutil.o
+compile: main.o fileutil.o mergesort.o
 		mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
 
 main.o: $(SRC)/main.cpp
@@ -32,6 +33,9 @@ main.o: $(SRC)/main.cpp
 
 fileutil.o: $(SRC)/file_util.cpp
 		$(CC) -c $(SRC)/file_util.cpp -o $(SRC)/file_util.o
+		
+mergesort.o: $(SRC)/mergesort.cpp
+		$(CC) -c $(SRC)/mergesort.cpp -o $(SRC)/mergesort.o
 
 clean:	FORCE
 		rm -f $(OBJECTS)

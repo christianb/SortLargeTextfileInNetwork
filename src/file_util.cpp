@@ -68,7 +68,7 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 list<unsigned char*>* FileUtil::readFile() {
 	cout << "call read file" << endl;
 	
-	string name = "./sortMe.txt";
+	string name = "./Euler.txt";
 	
 	ifstream is (name.c_str(), ifstream::in);
 

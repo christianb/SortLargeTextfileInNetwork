@@ -6,6 +6,8 @@
 #include <list>
 #include <string.h>
 #include "file_util.hpp"
+#include "mergesort.h"
+
 #include <vector>
 
 using namespace std;
@@ -260,12 +262,16 @@ int main (int argc, char *argv[]) {
     
     FileUtil *futil = new FileUtil(myrank, size);
     // read content from file
-    //list<unsigned char*> *histogram_list = futil->readFile();
+    list<unsigned char*> *histogram_list = futil->readFile();
     
-    // histogram_list = merge_sort(histogram_list);
+	Mergesort *mergesort = new Mergesort(); 
+
+	if (myrank == 0)
+    	mergesort->sort(histogram_list);
     
+
     /** Am Anfang hat jeder Knoten seine Daten eingelesen und einmal sortiert. **/
-    
+/*    
     // solange wie mehr als 1 Element im Vector ist tue...
     while (activeNodes->size() > 1) {
         // jetzt müssen wir bestimmen ob dieser Prozess empfangen oder senden soll?
@@ -303,8 +309,8 @@ int main (int argc, char *argv[]) {
         	return EXIT_SUCCESS;
 	    }
     }
-    
-    cout << "Nur noch ein Element in Liste! FERTIG" << endl;
+    */
+    cout << myrank << " Nur noch ein Element in Liste! FERTIG" << endl;
     
     // hier ist jetzt nur noch ein Element in der Liste
     // nun liegt die sortierte List vor...
