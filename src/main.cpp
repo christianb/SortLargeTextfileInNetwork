@@ -240,6 +240,27 @@ vector<int>* deleteAllOddNodes(vector<int> * activeNodes) {
     return other_nodes;
 }
 
+void printHistogramAsString(list<unsigned char*> *histogram) {
+	for (list<unsigned char*>::iterator it = histogram->begin(); it != histogram->end(); it++) {
+		unsigned char* element = *it;
+		for (int i = 0 ; i < 26; i++) {
+			int numberOfLettersUpperCase = element[i];
+			// print n times upper case letter
+			for (int n = 0; n < numberOfLettersUpperCase ; n++) {
+				cout << (char) (i+65);
+			}
+			
+			int numberOfLettersLowerCase = element[i+26];
+			// print n times lower case letter
+			for (int n = 0; n < numberOfLettersLowerCase ; n++) {
+				cout << (char) (i+97);
+			}
+		}
+		cout << endl;
+		
+	}
+}
+
 int main (int argc, char *argv[]) {
 	int myrank;
  	int size;
@@ -263,11 +284,17 @@ int main (int argc, char *argv[]) {
     FileUtil *futil = new FileUtil(myrank, size);
     // read content from file
     list<unsigned char*> *histogram_list = futil->readFile();
-    
+	cout << "size histogram list = " << histogram_list->size() << endl;
+
 	Mergesort *mergesort = new Mergesort(); 
 
-	if (myrank == 0)
-    	mergesort->sort(histogram_list);
+	if (myrank == 0) { 
+    	list<unsigned char*> *sorted_Histogram = mergesort->sort(histogram_list);
+		cout << "sorted list size = " << sorted_Histogram->size() << endl;
+	
+		printHistogramAsString(sorted_Histogram);
+	}
+	
     
 
     /** Am Anfang hat jeder Knoten seine Daten eingelesen und einmal sortiert. **/
