@@ -38,7 +38,7 @@ _histogram_data* FileUtil::makeHistogram(char *word, int cursor) {
 list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 	cout << "read word at position" << endl;
 	ifstream is;
-	string name = "./sortMe.txt";
+	string name = "./Euler.txt";
 	
 	is.open(name.c_str(), ifstream::in);
 	
@@ -70,7 +70,7 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 list<_histogram_data*>* FileUtil::readFile() {
 	//cout << "call read file" << endl;
 	
-	string name = "./sortMe.txt";
+	string name = "./Euler.txt";
 	
 	ifstream is (name.c_str(), ifstream::in);
 

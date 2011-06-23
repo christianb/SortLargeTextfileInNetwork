@@ -300,10 +300,11 @@ int main (int argc, char *argv[]) {
 	//printHistogram(histogram_list->front());
 
 	Mergesort *mergesort = new Mergesort(); 
-    list<_histogram_data*> *sorted_Histogram = mergesort->sort(histogram_list);
+    	list<_histogram_data*> *sorted_Histogram = mergesort->sort(histogram_list);
 	//cout << "sorted list size = " << sorted_Histogram->size() << endl;
 	//printHistogramAsString(sorted_Histogram);
 	
+    	//list<_histogram_data*> *sorted_Histogram = histogram_list;
     
 
     /** Am Anfang hat jeder Knoten seine Daten eingelesen und einmal sortiert. **/
@@ -324,7 +325,7 @@ int main (int argc, char *argv[]) {
                 list<_histogram_data*> *received_Histogram = receiveHistogram(successor);
 
     	        // do merge
-    	        // myHistogram = merge_sort(myHistogram, receivedHistogram);
+    	        sorted_Histogram = mergesort->merge(sorted_Histogram, received_Histogram);
             }
             
             // in jedem fall lösche knoten, die gesendet haben aus liste
@@ -348,7 +349,8 @@ int main (int argc, char *argv[]) {
     }
     
     cout << myrank << " Nur noch ein Element in Liste! FERTIG" << endl;
-    
+	printHistogramAsString(sorted_Histogram);    
+	cout << sorted_Histogram->size() << "words are sorted." << endl;
     // hier ist jetzt nur noch ein Element in der Liste
     // nun liegt die sortierte List vor...
     
