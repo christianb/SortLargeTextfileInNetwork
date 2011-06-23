@@ -1,15 +1,12 @@
-#include "mergesort.h"
+#include "mergesort.hpp"
 #include <list>
 
 using namespace std;
 
-list<unsigned char*>* Mergesort::sort(list<unsigned char*> *l){
-	cout << "call sort()" << endl;
-	cout << "list size = " << l->size();
-	
-	list<unsigned char*> *leftList = new list<unsigned char*>();
-	list<unsigned char*> *rightList = new list<unsigned char*>();
-	list<unsigned char*> *result = new list<unsigned char*>();;
+list<_histogram_data*>* Mergesort::sort(list<_histogram_data*> *l){
+	list<_histogram_data*> *leftList = new list<_histogram_data*>();
+	list<_histogram_data*> *rightList = new list<_histogram_data*>();
+	list<_histogram_data*> *result = new list<_histogram_data*>();;
 	
 	// Gesamtlänge und Mitte der Liste bestimmen
 	int listLength = l->size();
@@ -20,7 +17,7 @@ list<unsigned char*>* Mergesort::sort(list<unsigned char*> *l){
 		return l;
 	} else {
 		
-		list<unsigned char*>::iterator it;
+		list<_histogram_data*>::iterator it;
 		it = l->begin();
 		
 		// Pointer auf Mitte der Liste setzen
@@ -52,18 +49,13 @@ int Mergesort::getSumOfLetterCaseInsensitive(int indexLetter, unsigned char* his
     return 0;
 }
 
-list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned char*> *right){
-	cout << "call merge()" << endl;
-	cout << "left size = " << left->size();
-	cout << "right size = " << right->size() << endl;
-	
-	list<unsigned char*>* newList = new list<unsigned char*>(); // mergedList
-	list<unsigned char*>::iterator leftIt;
-    list<unsigned char*>::iterator rightIt;
+list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_histogram_data*> *right){	
+	list<_histogram_data*>* newList = new list<_histogram_data*>(); // mergedList
+	list<_histogram_data*>::iterator leftIt;
+    list<_histogram_data*>::iterator rightIt;
 	
 	
 	while (left->size() > 0 || right->size() > 0){
-		cout << "left and right is not empty!" << endl;
 		
 		// Pointer bei jedem durchlauf auf erstes Element setzen
 		leftIt = left->begin();
@@ -71,8 +63,12 @@ list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned
 		
 				
 		if (left->size() > 0 && right->size() > 0) {		// Beide Listen beinhalten noch Elemente
-            unsigned char *leftHistogram = *leftIt;
-            unsigned char *rightHistogram = *rightIt;
+
+			_histogram_data* _leftHistogram = *leftIt;
+            unsigned char *leftHistogram = _leftHistogram->array;
+
+			_histogram_data* _rightHistogram = *rightIt;
+            unsigned char *rightHistogram = _rightHistogram->array;
             
             // get sum and compare
 			bool didMerge = false;
@@ -82,7 +78,7 @@ list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned
 
                 if (sumLeftHistogram < sumRightHistogram) {
                     // ok rechtes Histogram kommt zuertst
-                    newList->push_back(rightHistogram);
+                    newList->push_back(_rightHistogram);
 					right->erase(rightIt);
 					didMerge = true;
                     break;  // stop comparing of this both histograms
@@ -90,7 +86,7 @@ list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned
                 
                 if (sumLeftHistogram > sumRightHistogram) {
                     // ok linkes Histogram kommt zuerst;
-                    newList->push_back(leftHistogram);
+                    newList->push_back(_leftHistogram);
                     left->erase(leftIt);
 					didMerge = true;
                     break;
@@ -105,7 +101,7 @@ list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned
                     
                     if (lowerCaseLetterRightHistogram > lowerCaseLetterLeftHistogram) {
                         // ok rechtes Histogram kommt zuertst
-                        newList->push_back(rightHistogram);
+                        newList->push_back(_rightHistogram);
 						right->erase(rightIt);
 						didMerge = true;
                         break;  // stop comparing of this both histograms
@@ -113,7 +109,7 @@ list<unsigned char*>* Mergesort::merge(list<unsigned char*> *left, list<unsigned
                     
                     if (lowerCaseLetterRightHistogram < lowerCaseLetterLeftHistogram) {
                         // ok linkes Histogram kommt zuerst;
-                        newList->push_back(leftHistogram);
+                        newList->push_back(_leftHistogram);
                         left->erase(leftIt);
 						didMerge = true;
                         break;

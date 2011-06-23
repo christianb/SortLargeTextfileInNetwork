@@ -5,10 +5,9 @@
 #include <iostream>
 #include <list>
 #include <string.h>
-#include "file_util.hpp"
-#include "mergesort.h"
-
 #include <vector>
+
+#include "mergesort.hpp"
 
 using namespace std;
 
@@ -29,8 +28,7 @@ void sendIntegerListToNode(int node, list<int*> *data) {
 	}
 }
 
-void sendHistogram(int node, list<unsigned char*> *data) {
-	cout << "call sendHistogram(" << node << ")" << endl;
+void sendHistogram(int node, list<_histogram_data*> *data) {
 	int size = data->size();
 	
 	// First send the total number of elements in the vector
@@ -39,9 +37,14 @@ void sendHistogram(int node, list<unsigned char*> *data) {
 	cout << "send size = " << size << endl;
 	
 	int c = 1;
-	for (list<unsigned char*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
+	for (list<_histogram_data*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
 		// send the int*
-		MPI_Send(*l_it, 52,MPI_CHAR,node,0,MPI_COMM_WORLD);
+		_histogram_data* _element = *l_it;
+		unsigned char* _array = _element->array;
+		MPI_Send(_array, 52,MPI_CHAR,node,0,MPI_COMM_WORLD);
+		
+		int _cursor = _element->cursor;
+		MPI_Send(&_cursor, 1,MPI_INT,node,0,MPI_COMM_WORLD);
 		
 		if (c % 100000 == 0) {cout << c << endl;}
 		c++;
@@ -77,7 +80,7 @@ void sendListToNode(int node, list<char*> *data) {
 	
 }
 
-list<unsigned char*>* receiveHistogram(int node) {
+list<_histogram_data*>* receiveHistogram(int node) {
 	cout << "call receiveHistogram(" << node << ")" << endl;
 	MPI_Status status;
 	// First receive the size of the vector
@@ -87,21 +90,28 @@ list<unsigned char*>* receiveHistogram(int node) {
 	cout << "received that " << size << " elements will come..." << endl;
 	
 	int c = 1;
-	list<unsigned char*>* int_list = new list<unsigned char*>();
+	list<_histogram_data*>* histogram_list = new list<_histogram_data*>();
 	for(int i = 0; i < size; i++) {
 		unsigned char *value = (unsigned char*) malloc(sizeof(unsigned char) * 52);
 		
-		MPI_Recv (value,52,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+		MPI_Recv (value,52,MPI_CHAR,node,0,MPI_COMM_WORLD,&status);
+		
+		int cursor;
+		MPI_Recv (&cursor,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+		
+		_histogram_data* _new_histogram = (_histogram_data*) malloc (sizeof(_histogram_data*));
+		_new_histogram->array = value;
+		_new_histogram->cursor = cursor;
 		
 		//cout << "received int: " << *value << endl;
-		int_list->push_back(value);
+		histogram_list->push_back(_new_histogram);
 		
 		if (c % 100000 == 0) {cout << c << endl;}
 		c++;	
 	}
 	
 	cout << "done receive." << endl;
-	return int_list;
+	return histogram_list;
 	
 }
 
@@ -160,7 +170,8 @@ list<char*>* receiveListFromNode(int node) {
 	return data;
 }
 
-void printHistogram(unsigned char* histogram) {
+void printHistogram(_histogram_data* _histogram) {
+	unsigned char* histogram = _histogram->array;
 	for (int i = 0 ; i < 26 ; i++) {
 		int c = 'A' + i;
 		cout << "[" << (char) c << "] = " <<  (int) histogram[i] << endl;
@@ -171,7 +182,7 @@ void printHistogram(unsigned char* histogram) {
 		cout << "[" << (char) c << "] = " << (int) histogram[i] << endl;
 	}
 	
-	cout << "line_number = " << histogram[52] << endl;
+	cout << "cursor position = " << _histogram->cursor << endl << endl;
  }
 
 /**
@@ -240,9 +251,10 @@ vector<int>* deleteAllOddNodes(vector<int> * activeNodes) {
     return other_nodes;
 }
 
-void printHistogramAsString(list<unsigned char*> *histogram) {
-	for (list<unsigned char*>::iterator it = histogram->begin(); it != histogram->end(); it++) {
-		unsigned char* element = *it;
+void printHistogramAsString(list<_histogram_data*> *histogram) {
+	for (list<_histogram_data*>::iterator it = histogram->begin(); it != histogram->end(); it++) {
+		_histogram_data* _element = *it;
+		unsigned char* element = _element->array;
 		for (int i = 0 ; i < 26; i++) {
 			int numberOfLettersUpperCase = element[i];
 			// print n times upper case letter
@@ -283,17 +295,14 @@ int main (int argc, char *argv[]) {
     
     FileUtil *futil = new FileUtil(myrank, size);
     // read content from file
-    list<unsigned char*> *histogram_list = futil->readFile();
-	cout << "size histogram list = " << histogram_list->size() << endl;
+    list<_histogram_data*> *histogram_list = futil->readFile();
+	
+	//printHistogram(histogram_list->front());
 
 	Mergesort *mergesort = new Mergesort(); 
-
-	if (myrank == 0) { 
-    	list<unsigned char*> *sorted_Histogram = mergesort->sort(histogram_list);
-		cout << "sorted list size = " << sorted_Histogram->size() << endl;
-	
-		printHistogramAsString(sorted_Histogram);
-	}
+    list<_histogram_data*> *sorted_Histogram = mergesort->sort(histogram_list);
+	//cout << "sorted list size = " << sorted_Histogram->size() << endl;
+	printHistogramAsString(sorted_Histogram);
 	
     
 

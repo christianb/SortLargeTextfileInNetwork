@@ -7,7 +7,7 @@ FileUtil::FileUtil(int rank, int size) {
 	this->mSize = size;
 }
 
-unsigned char* FileUtil::makeHistogram(char *word, int line_number) {
+_histogram_data* FileUtil::makeHistogram(char *word, int cursor) {
 	int len = strlen(word);
 	
 	unsigned char *histogram = (unsigned char*) malloc(sizeof(unsigned char) * 52);
@@ -26,9 +26,11 @@ unsigned char* FileUtil::makeHistogram(char *word, int line_number) {
 		}
 	}
 	
-	//histogram[52] = line_number;
+	_histogram_data* _histogram = (_histogram_data*) malloc (sizeof(_histogram_data));
+	_histogram->array = histogram;
+	_histogram->cursor = cursor;
 	
-	return histogram;
+	return _histogram;
 }
 
 // reads all lines at positions (given by a list) within file
@@ -65,7 +67,7 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 }
 
 // read all words from a file
-list<unsigned char*>* FileUtil::readFile() {
+list<_histogram_data*>* FileUtil::readFile() {
 	cout << "call read file" << endl;
 	
 	string name = "./Euler.txt";
@@ -74,7 +76,7 @@ list<unsigned char*>* FileUtil::readFile() {
 
 	if (is.fail()) {
 		cout << "File: "<< name << " not found!" << endl;
-		return new list<unsigned char*>();
+		return new list<_histogram_data*>();
 	}
 
 	// 1) determine the length of the file
@@ -145,10 +147,11 @@ list<unsigned char*>* FileUtil::readFile() {
  
   cout << "start to read from file..." << endl;
   //list<char*> *words = new list<char*>();
-	list<unsigned char*> *histogram_list = new list<unsigned char*>();
+	list<_histogram_data*> *histogram_list = new list<_histogram_data*>();
 	
 	int index = 1;
 	do {
+		int cursor = is.tellg();
 		string s; // temp string, just to determine the line length
 		getline(is, s, '\n'); // get the line until line break
 
@@ -158,7 +161,7 @@ list<unsigned char*>* FileUtil::readFile() {
 
     	// insert word in list
 		//words->push_back(word);
-		histogram_list->push_back(makeHistogram(word, index));
+		histogram_list->push_back(makeHistogram(word, cursor));
 		
 		free(word);
     

@@ -7,8 +7,12 @@
 #include <list>
 #include <cstring>
 
-
 using namespace std;
+
+struct _histogram_data {
+	unsigned char* array;
+	int cursor;
+};
 
 class FileUtil {
 public:	
@@ -27,13 +31,13 @@ void printWords(list<char*> *words);
 
 list<int*>* readFilePositions();
 
-list<unsigned char*>* readFile();
+list<_histogram_data*>* readFile();
 
 private:
 	int mRank;
 	int mSize;
 	
-	unsigned char* makeHistogram(char *word, int line_number);
+	_histogram_data* makeHistogram(char *word, int cursor);
 
 };
 
