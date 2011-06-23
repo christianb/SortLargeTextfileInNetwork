@@ -214,12 +214,18 @@ int getSuccessorOfNode(int node, vector<int> * activeNodes) {
         int element = activeNodes->at(i);
         if (node == element) {
             // get Successor
+            if (i == activeNodes->size()-1) { // wenn i am letzten index
+                // dann gibt es keinen nachfolger
+                return -1;
+            }
+            
             return activeNodes->at(i+1);
+            
         }
     }
 }
 
-void deleteAllOddNodes(vector<int> * activeNodes) {
+vector<int>* deleteAllOddNodes(vector<int> * activeNodes) {
     vector<int> *other_nodes = new vector<int>();
     
     for (int i = 0; i < activeNodes->size(); i++) {    
@@ -228,7 +234,8 @@ void deleteAllOddNodes(vector<int> * activeNodes) {
         }
     }
     
-    activeNodes = other_nodes;
+    delete activeNodes;
+    return other_nodes;
 }
 
 int main (int argc, char *argv[]) {
@@ -253,7 +260,7 @@ int main (int argc, char *argv[]) {
     
     FileUtil *futil = new FileUtil(myrank, size);
     // read content from file
-    list<unsigned char*> *histogram_list = futil->readFile();
+    //list<unsigned char*> *histogram_list = futil->readFile();
     
     // histogram_list = merge_sort(histogram_list);
     
@@ -266,22 +273,30 @@ int main (int argc, char *argv[]) {
         int indexOfNode = getIndexOfNode(myrank, activeNodes);
         
         // wenn Index gerade dann empfange vom Nachfolger
-	    // wenn Index ungerade dann empfange vom Vorgänger 
 	    if (indexOfNode % 2 == 0) {
 	        // empfange vom Nachfolger
-            unsigned char successor = getSuccessorOfNode(myrank, activeNodes);
-            list<unsigned char*> *received_Histogram = receiveHistogram(successor);
-	        
-	        // do merge
-	        // myHistogram = merge_sort(myHistogram, receivedHistogram);
+            int successor = getSuccessorOfNode(myrank, activeNodes);
+            
+            if (successor != -1) { // wenn es einen nachfolger gibt emofange und merge
+                //list<unsigned char*> *received_Histogram = receiveHistogram(successor);
+                cout << "node: " << myrank << " empfange von node:" << successor << endl;
+
+    	        // do merge
+    	        // myHistogram = merge_sort(myHistogram, receivedHistogram);
+            }
+            
+            // in jedem fall lösche knoten, die gesendet haben aus liste
 	        
 	        // Lösche alle nodes aus liste mit ungeradem index
-            deleteAllOddNodes(activeNodes);
+            //cout << "size of activeNodes = " << activeNodes->size();
+            activeNodes = deleteAllOddNodes(activeNodes);
+            //cout << "deleteAllOddNodes(), size is = " << activeNodes->size();
             
-	    } else {
+	    } else {  // wenn Index ungerade dann empfange vom Vorgänger 
 	        // sende an Vorgänger
             int predecessor = getPredecessorOfNode(myrank, activeNodes);
-            sendHistogram(predecessor, histogram_list);
+            //sendHistogram(predecessor, histogram_list);
+            cout << "node: " << myrank << " sende an node:" << predecessor << endl;
             
             // DONE!
             MPI_Finalize();
@@ -289,13 +304,15 @@ int main (int argc, char *argv[]) {
 	    }
     }
     
+    cout << "Nur noch ein Element in Liste! FERTIG" << endl;
+    
     // hier ist jetzt nur noch ein Element in der Liste
     // nun liegt die sortierte List vor...
     
     // bestimmte welche wörter wo in der sortierten liste stehen und schreibe die wörter (sortiert) in datei.
     
     
-    
+    /*
 
 	// if this is process zero than this is the master node, controlling all others
 	if (myrank == 0) {
@@ -347,7 +364,7 @@ int main (int argc, char *argv[]) {
 		
 			printHistogram(histogram->back());
 		}
-	}
+	}*/
 
  	MPI_Finalize();
 
