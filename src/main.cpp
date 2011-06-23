@@ -6,6 +6,7 @@
 #include <list>
 #include <string.h>
 #include "file_util.hpp"
+#include <vector>
 
 using namespace std;
 
@@ -171,6 +172,64 @@ void printHistogram(unsigned char* histogram) {
 	cout << "line_number = " << histogram[52] << endl;
  }
 
+/**
+ * Get the index of the given node in vector.
+ * @param node
+ * @param activeNodes
+ * @return int The Index of the node in the vector.
+ */
+int getIndexOfNode(int node, vector<int> * activeNodes) {
+    for (int i = 0; i < activeNodes->size() ; i++) {
+        int element = activeNodes->at(i);
+        if (node == element) {
+            return i;
+        }
+    }
+} 
+
+/**
+ * Get the Predecessor of the given node from vector.
+ * @param node
+ * @param activeNodes A Pointer of
+ * @return unsigned char A pointer to the Predecessor node.
+ */
+int getPredecessorOfNode(int node, vector<int> * activeNodes) {
+    for (int i = 0; i < activeNodes->size(); i++) {
+        int element = activeNodes->at(i);
+        if (node == element) {
+            // get Predecessor
+            return activeNodes->at(i-1);
+        }
+    }
+}
+
+/**
+ * Get the successor of the given node from vector.
+ * @param node
+ * @param activeNodes A Pointer of
+ * @return unsigned char A pointer to the successor node.
+ */
+int getSuccessorOfNode(int node, vector<int> * activeNodes) {
+    for (int i = 0; i < activeNodes->size(); i++) {
+        int element = activeNodes->at(i);
+        if (node == element) {
+            // get Successor
+            return activeNodes->at(i+1);
+        }
+    }
+}
+
+void deleteAllOddNodes(vector<int> * activeNodes) {
+    vector<int> *other_nodes = new vector<int>();
+    
+    for (int i = 0; i < activeNodes->size(); i++) {    
+        if (i % 2 == 0){
+            other_nodes->push_back(activeNodes->at(i));
+        }
+    }
+    
+    activeNodes = other_nodes;
+}
 
 int main (int argc, char *argv[]) {
 	int myrank;
@@ -184,6 +243,59 @@ int main (int argc, char *argv[]) {
 
 	// get number of prozesses
  	MPI_Comm_size(MPI_COMM_WORLD, &size);
+ 	
+    vector<int> *activeNodes = new vector<int>();
+    
+    // init list with active nodes
+    for (int i = 0; i < size; i++){
+        activeNodes->push_back(i);
+    }
+    
+    FileUtil *futil = new FileUtil(myrank, size);
+    // read content from file
+    list<unsigned char*> *histogram_list = futil->readFile();
+    
+    // histogram_list = merge_sort(histogram_list);
+    
+    /** Am Anfang hat jeder Knoten seine Daten eingelesen und einmal sortiert. **/
+    
+    // solange wie mehr als 1 Element im Vector ist tue...
+    while (activeNodes->size() > 1) {
+        // jetzt müssen wir bestimmen ob dieser Prozess empfangen oder senden soll?
+	    // suche diese Prozessnummer in den activeNodes und gib den Index zurück
+        int indexOfNode = getIndexOfNode(myrank, activeNodes);
+        
+        // wenn Index gerade dann empfange vom Nachfolger
+	    // wenn Index ungerade dann empfange vom Vorgänger 
+	    if (indexOfNode % 2 == 0) {
+	        // empfange vom Nachfolger
+            unsigned char successor = getSuccessorOfNode(myrank, activeNodes);
+            list<unsigned char*> *received_Histogram = receiveHistogram(successor);
+	        
+	        // do merge
+	        // myHistogram = merge_sort(myHistogram, receivedHistogram);
+	        
+	        // Lösche alle nodes aus liste mit ungeradem index
+            deleteAllOddNodes(activeNodes);
+            
+	    } else {
+	        // sende an Vorgänger
+            int predecessor = getPredecessorOfNode(myrank, activeNodes);
+            sendHistogram(predecessor, histogram_list);
+            
+            // DONE!
+            MPI_Finalize();
+        	return EXIT_SUCCESS;
+	    }
+    }
+    
+    // hier ist jetzt nur noch ein Element in der Liste
+    // nun liegt die sortierte List vor...
+    
+    // bestimmte welche wörter wo in der sortierten liste stehen und schreibe die wörter (sortiert) in datei.
+    
+    
+    
 
 	// if this is process zero than this is the master node, controlling all others
 	if (myrank == 0) {
@@ -191,13 +303,20 @@ int main (int argc, char *argv[]) {
 		double startTime, endTime, timeUsed;
 		startTime = MPI_Wtime(); // set start time
 		
-		FileUtil *futil = new FileUtil(myrank, size);
+		
 		
 		//list<int*> *cursors = futil->readFilePositions();
 		//list<char*> *words = futil->readAllPosition(cursors);
-		list<unsigned char*> *histogram_list = futil->readFile();
+		
+		
+		// do mergesort
+		// list<unsigned char*> *merge(histogram_list)
 	
-		printHistogram(histogram_list->back());
+	    
+	    
+	
+	    // just for debugging
+		//printHistogram(histogram_list->back());
 
 		endTime = MPI_Wtime();
 		timeUsed = endTime - startTime;
