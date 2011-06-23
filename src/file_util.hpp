@@ -27,13 +27,13 @@ void printWords(list<char*> *words);
 
 list<int*>* readFilePositions();
 
-list<int*>* readFile();
+list<unsigned char*>* readFile();
 
 private:
 	int mRank;
 	int mSize;
 	
-	int* makeHistogram(char *word, int line_number);
+	unsigned char* makeHistogram(char *word, int line_number);
 
 };
 

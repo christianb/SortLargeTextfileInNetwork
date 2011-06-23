@@ -7,23 +7,26 @@ FileUtil::FileUtil(int rank, int size) {
 	this->mSize = size;
 }
 
-int* FileUtil::makeHistogram(char *word, int line_number) {
+unsigned char* FileUtil::makeHistogram(char *word, int line_number) {
 	int len = strlen(word);
 	
-	int *histogram = (int*) malloc(sizeof(int) * (26+1));
-	for (int i = 0 ; i < 27 ; i++) {
+	unsigned char *histogram = (unsigned char*) malloc(sizeof(unsigned char) * 52);
+	for (int i = 0 ; i < 52 ; i++) {
 		histogram[i] = 0;
 	}
 	
 	
 	for (int i = 0; i< len; i++) {
-		word[i] = tolower(word[i]);
+		if (word[i] >= 'A' && word[i] <= 'Z') {
+			histogram[word[i]-'A']++;
+		} 
+	
 		if (word[i] >= 'a' && word[i] <= 'z') {
-			histogram[word[i]-'a']++;
+			histogram[word[i]-'A'-6]++;
 		}
 	}
 	
-	histogram[26] = line_number;
+	//histogram[52] = line_number;
 	
 	return histogram;
 }
@@ -62,7 +65,7 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 }
 
 // read all words from a file
-list<int*>* FileUtil::readFile() {
+list<unsigned char*>* FileUtil::readFile() {
 	cout << "call read file" << endl;
 	
 	string name = "./sortMe.txt";
@@ -71,7 +74,7 @@ list<int*>* FileUtil::readFile() {
 
 	if (is.fail()) {
 		cout << "File: "<< name << " not found!" << endl;
-		return new list<int*>();
+		return new list<unsigned char*>();
 	}
 
 	// 1) determine the length of the file
@@ -142,7 +145,7 @@ list<int*>* FileUtil::readFile() {
  
   cout << "start to read from file..." << endl;
   //list<char*> *words = new list<char*>();
-	list<int*> *histogram_list = new list<int*>();
+	list<unsigned char*> *histogram_list = new list<unsigned char*>();
 	
 	int index = 1;
 	do {

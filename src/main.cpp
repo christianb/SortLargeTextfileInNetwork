@@ -26,7 +26,7 @@ void sendIntegerListToNode(int node, list<int*> *data) {
 	}
 }
 
-void sendHistogram(int node, list<int*> *data) {
+void sendHistogram(int node, list<unsigned char*> *data) {
 	cout << "call sendHistogram(" << node << ")" << endl;
 	int size = data->size();
 	
@@ -36,9 +36,9 @@ void sendHistogram(int node, list<int*> *data) {
 	cout << "send size = " << size << endl;
 	
 	int c = 1;
-	for (list<int*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
+	for (list<unsigned char*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
 		// send the int*
-		MPI_Send(*l_it, 27,MPI_INT,node,0,MPI_COMM_WORLD);
+		MPI_Send(*l_it, 52,MPI_CHAR,node,0,MPI_COMM_WORLD);
 		
 		if (c % 100000 == 0) {cout << c << endl;}
 		c++;
@@ -74,7 +74,7 @@ void sendListToNode(int node, list<char*> *data) {
 	
 }
 
-list<int*>* receiveHistogram(int node) {
+list<unsigned char*>* receiveHistogram(int node) {
 	cout << "call receiveHistogram(" << node << ")" << endl;
 	MPI_Status status;
 	// First receive the size of the vector
@@ -84,11 +84,11 @@ list<int*>* receiveHistogram(int node) {
 	cout << "received that " << size << " elements will come..." << endl;
 	
 	int c = 1;
-	list<int*>* int_list = new list<int*>();
+	list<unsigned char*>* int_list = new list<unsigned char*>();
 	for(int i = 0; i < size; i++) {
-		int *value = (int*) malloc(sizeof(int) * (26+1));
+		unsigned char *value = (unsigned char*) malloc(sizeof(unsigned char) * 52);
 		
-		MPI_Recv (value,27,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+		MPI_Recv (value,52,MPI_INT,node,0,MPI_COMM_WORLD,&status);
 		
 		//cout << "received int: " << *value << endl;
 		int_list->push_back(value);
@@ -157,13 +157,18 @@ list<char*>* receiveListFromNode(int node) {
 	return data;
 }
 
-void printHistogram(int* histogram) {
+void printHistogram(unsigned char* histogram) {
 	for (int i = 0 ; i < 26 ; i++) {
-		int c = 'a' + i;
-		cout << "[" << (char) c << "] = " <<  histogram[i] << endl;
+		int c = 'A' + i;
+		cout << "[" << (char) c << "] = " <<  (int) histogram[i] << endl;
+	}
+
+	for (int i = 26; i < 52; i++) {
+		int c = 'A' + i + 6;
+		cout << "[" << (char) c << "] = " << (int) histogram[i] << endl;
 	}
 	
-	cout << "line_number = " << histogram[26] << endl;
+	cout << "line_number = " << histogram[52] << endl;
  }
 
 
@@ -190,7 +195,7 @@ int main (int argc, char *argv[]) {
 		
 		//list<int*> *cursors = futil->readFilePositions();
 		//list<char*> *words = futil->readAllPosition(cursors);
-		list<int*> *histogram_list = futil->readFile();
+		list<unsigned char*> *histogram_list = futil->readFile();
 	
 		printHistogram(histogram_list->back());
 
@@ -219,7 +224,7 @@ int main (int argc, char *argv[]) {
 		// lese zeichen ein
 		//receiveIntegerListFromNode(0);
 		//receiveListFromNode(0);
-			list<int*> *histogram = receiveHistogram(0);
+			list<unsigned char*> *histogram = receiveHistogram(0);
 		
 			printHistogram(histogram->back());
 		}
