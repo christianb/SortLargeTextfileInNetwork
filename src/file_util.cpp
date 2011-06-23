@@ -68,9 +68,9 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 
 // read all words from a file
 list<_histogram_data*>* FileUtil::readFile() {
-	cout << "call read file" << endl;
+	//cout << "call read file" << endl;
 	
-	string name = "./Euler.txt";
+	string name = "./sortMe.txt";
 	
 	ifstream is (name.c_str(), ifstream::in);
 
@@ -82,23 +82,22 @@ list<_histogram_data*>* FileUtil::readFile() {
 	// 1) determine the length of the file
 	is.seekg(0, ios::end);
 	const int length = is.tellg();
-	cout << "file contains " << length << " characters" << endl;
+	//cout << "file contains " << length << " characters" << endl;
 
 	/* 	2) devide the number of characters of the number of prozesses
 		rundungsfehler sollten egal sein, da immer bis zur letzten Zeile gesprungen wird!
 		int nimmt nur die Zahl vor dem Komma */
 	int i = length / this->mSize;
-	cout << "characters to be read by this prozess: " << i << endl;
+	//cout << "characters to be read by this prozess: " << i << endl;
 		
 	// 3) calculate from pos
 	int from = mRank * i;
-	cout << "from: " << from << endl;
+	//cout << "from: " << from << endl;
 	// 4) calculate to pos
 	int to = ((mRank+1) * i);
-	cout << "to: " << to << endl;
+	//cout << "to: " << to << endl;
 	
 	int c;
-	cout << "5)" << endl;
 	// 5) if this is not he first prozess
 	// determin real from position
 	if (mRank != 0) {
@@ -112,11 +111,9 @@ list<_histogram_data*>* FileUtil::readFile() {
 		from = is.tellg();
 	}
 
-	cout << "6)" << endl;
 	// 6) if this is not the last prozess
 	// determine real to position
 	if (mRank != (mSize-1)) {
-		cout << "6.1)" << endl;
 		is.seekg(to, ios::beg);
 		// read chars while line break has found
 		do {
@@ -128,7 +125,6 @@ list<_histogram_data*>* FileUtil::readFile() {
 		to = is.tellg();
 		to--;
 	} else {
-		cout << "6.2)" << endl;
 		is.seekg(0, ios::end);
 		to = is.tellg();
 	}
@@ -145,7 +141,7 @@ list<_histogram_data*>* FileUtil::readFile() {
 	is.seekg(from, ios::beg); // go where to start
 	//cout << "start reading at char pos: " << is.tellg() << endl;
  
-  cout << "start to read from file..." << endl;
+  //cout << "start to read from file..." << endl;
   //list<char*> *words = new list<char*>();
 	list<_histogram_data*> *histogram_list = new list<_histogram_data*>();
 	

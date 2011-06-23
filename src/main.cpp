@@ -302,12 +302,12 @@ int main (int argc, char *argv[]) {
 	Mergesort *mergesort = new Mergesort(); 
     list<_histogram_data*> *sorted_Histogram = mergesort->sort(histogram_list);
 	//cout << "sorted list size = " << sorted_Histogram->size() << endl;
-	printHistogramAsString(sorted_Histogram);
+	//printHistogramAsString(sorted_Histogram);
 	
     
 
     /** Am Anfang hat jeder Knoten seine Daten eingelesen und einmal sortiert. **/
-/*    
+    
     // solange wie mehr als 1 Element im Vector ist tue...
     while (activeNodes->size() > 1) {
         // jetzt müssen wir bestimmen ob dieser Prozess empfangen oder senden soll?
@@ -320,8 +320,8 @@ int main (int argc, char *argv[]) {
             int successor = getSuccessorOfNode(myrank, activeNodes);
             
             if (successor != -1) { // wenn es einen nachfolger gibt emofange und merge
-                //list<unsigned char*> *received_Histogram = receiveHistogram(successor);
-                cout << "node: " << myrank << " empfange von node:" << successor << endl;
+				cout << "node: " << myrank << " empfange von node:" << successor << endl;
+                list<_histogram_data*> *received_Histogram = receiveHistogram(successor);
 
     	        // do merge
     	        // myHistogram = merge_sort(myHistogram, receivedHistogram);
@@ -337,7 +337,8 @@ int main (int argc, char *argv[]) {
 	    } else {  // wenn Index ungerade dann empfange vom Vorgänger 
 	        // sende an Vorgänger
             int predecessor = getPredecessorOfNode(myrank, activeNodes);
-            //sendHistogram(predecessor, histogram_list);
+            
+			sendHistogram(predecessor, sorted_Histogram);
             cout << "node: " << myrank << " sende an node:" << predecessor << endl;
             
             // DONE!
@@ -345,7 +346,7 @@ int main (int argc, char *argv[]) {
         	return EXIT_SUCCESS;
 	    }
     }
-    */
+    
     cout << myrank << " Nur noch ein Element in Liste! FERTIG" << endl;
     
     // hier ist jetzt nur noch ein Element in der Liste

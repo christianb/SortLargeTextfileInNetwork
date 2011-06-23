@@ -81,6 +81,7 @@ list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_his
                     newList->push_back(_rightHistogram);
 					right->erase(rightIt);
 					didMerge = true;
+					cout << "merge successfull" << endl;
                     break;  // stop comparing of this both histograms
                 }
                 
@@ -89,6 +90,7 @@ list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_his
                     newList->push_back(_leftHistogram);
                     left->erase(leftIt);
 					didMerge = true;
+					cout << "merge successfull" << endl;
                     break;
                 }
                 
@@ -104,6 +106,7 @@ list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_his
                         newList->push_back(_rightHistogram);
 						right->erase(rightIt);
 						didMerge = true;
+						cout << "merge successfull" << endl;
                         break;  // stop comparing of this both histograms
                     }
                     
@@ -112,6 +115,7 @@ list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_his
                         newList->push_back(_leftHistogram);
                         left->erase(leftIt);
 						didMerge = true;
+						cout << "merge successfull" << endl;
                         break;
                     }
                     
@@ -125,15 +129,18 @@ list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_his
 			if (!didMerge) {
 				newList->push_back(*leftIt);					// Dieses einfügen
 				left->erase(leftIt);
+				cout << "merge successfull" << endl;
 			}
             
 			
 		} else if ( left->size() > 0){					// Nur linke Liste enthält Elemente
 			newList->push_back(*leftIt);					// Dieses einfügen
-			left->erase(leftIt);							// und löschen
+			left->erase(leftIt);		
+			cout << "merge successfull" << endl;					// und löschen
 		} else if (right->size() > 0){					// Nur rechte Liste enthät Elemente
 			newList->push_back(*rightIt);				// Element einfügen
-			right->erase(rightIt);						// und löschen
+			right->erase(rightIt);		
+			cout << "merge successfull" << endl;				// und löschen
 		}
 	}
 	
