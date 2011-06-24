@@ -251,28 +251,6 @@ vector<int>* deleteAllOddNodes(vector<int> * activeNodes) {
     return other_nodes;
 }
 
-void printHistogramAsString(list<_histogram_data*> *histogram) {
-	for (list<_histogram_data*>::iterator it = histogram->begin(); it != histogram->end(); it++) {
-		_histogram_data* _element = *it;
-		unsigned char* element = _element->array;
-		for (int i = 0 ; i < 26; i++) {
-			int numberOfLettersUpperCase = element[i];
-			// print n times upper case letter
-			for (int n = 0; n < numberOfLettersUpperCase ; n++) {
-				cout << (char) (i+65);
-			}
-			
-			int numberOfLettersLowerCase = element[i+26];
-			// print n times lower case letter
-			for (int n = 0; n < numberOfLettersLowerCase ; n++) {
-				cout << (char) (i+97);
-			}
-		}
-		cout << endl;
-		
-	}
-}
-
 int main (int argc, char *argv[]) {
 	int myrank;
  	int size;
@@ -349,8 +327,10 @@ int main (int argc, char *argv[]) {
     }
     
     cout << myrank << " Nur noch ein Element in Liste! FERTIG" << endl;
-	printHistogramAsString(sorted_Histogram);    
+	//futil->printHistogramAsString(sorted_Histogram);    
 	cout << sorted_Histogram->size() << "words are sorted." << endl;
+	
+	futil->writeOriginalWordsFromHistogram(sorted_Histogram);
     // hier ist jetzt nur noch ein Element in der Liste
     // nun liegt die sortierte List vor...
     

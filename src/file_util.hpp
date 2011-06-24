@@ -25,14 +25,17 @@ public:
 	 */
 	FileUtil(int rank, int size);
 
-list<char*>* readAllPosition(list<int*> *coursors);
+	list<char*>* readAllPosition(list<int*> *coursors);
 
-void printWords(list<char*> *words);
+	void printWords(list<char*> *words);
 
-list<int*>* readFilePositions();
+	list<int*>* readFilePositions();
 
-list<_histogram_data*>* readFile();
+	list<_histogram_data*>* readFile();
 
+	void writeOriginalWordsFromHistogram(list<_histogram_data*> *histogram_list);
+	
+	string* printHistogramAsString(_histogram_data *histogram);
 private:
 	int mRank;
 	int mSize;

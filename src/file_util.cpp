@@ -223,6 +223,62 @@ list<int*>* FileUtil::readFilePositions() {
 	cout << "done" << endl;
 	return coursors;
 }
+
+string* FileUtil::printHistogramAsString(_histogram_data *histogram) {
+	string *s_histogram = new string();
+	
+	unsigned char* element = histogram->array;
+		for (int i = 0 ; i < 26; i++) {
+			int numberOfLettersUpperCase = element[i];
+			// print n times upper case letter
+			for (int n = 0; n < numberOfLettersUpperCase ; n++) {
+				s_histogram->append(1, (char) (i+65));
+			}
+			
+			int numberOfLettersLowerCase = element[i+26];
+			// print n times lower case letter
+			for (int n = 0; n < numberOfLettersLowerCase ; n++) {
+				s_histogram->append(1, (char) (i+97));
+			}
+		}
+		//s_histogram->append("\n");
+	
+	return s_histogram;
+}
+
+void FileUtil::writeOriginalWordsFromHistogram(list<_histogram_data*> *histogram_list) {
+	ofstream out("./sortedList.txt");
+	ofstream out_related("./related_word_histogram.txt");
+	ifstream ifs("./Euler.txt");
+	
+	int index = 1;
+	for (list<_histogram_data*>::iterator it = histogram_list->begin() ; it != histogram_list->end() ; it++) {
+		// get cursor position
+		_histogram_data* histogram = *it;
+		int cursor = histogram->cursor;
+		string word;
+		ifs.seekg(cursor, ios::beg);
+		
+		if (!ifs.good()) {
+			ifs.close();
+			ifs.open("./Euler.txt");
+		}
+		getline(ifs, word, '\n');
+		//cout << word << endl;
+		//cout << index << ": " << word << " at: " << cursor << endl;
+		//index++;
+		out << word << endl;
+		
+		string *word_histogram = printHistogramAsString(histogram);
+		out_related << word << " => " <<  *word_histogram << endl;
+		delete (word_histogram);
+	}
+	
+	ifs.close();
+	out.close();
+	out_related.close();
+}
+
 /*
 int main (int argc, char *argv[]) {		
 	// get the line numbers (all)
