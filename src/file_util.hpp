@@ -6,13 +6,14 @@
 #include <cstdlib>
 #include <list>
 #include <cstring>
+#include <stdlib.h>
 
 using namespace std;
 
-struct _histogram_data {
+typedef struct {
 	unsigned char* array;
 	int cursor;
-};
+} Histogram;
 
 class FileUtil {
 public:	
@@ -31,17 +32,18 @@ public:
 
 	list<int*>* readFilePositions();
 
-	list<_histogram_data*>* readFile();
+	Histogram** readFile();
 
-	void writeOriginalWordsFromHistogram(list<_histogram_data*> *histogram_list);
+	void writeOriginalWordsFromHistogram(list<Histogram*> *histogram_list);
 	
-	string* printHistogramAsString(_histogram_data *histogram);
+	string* printHistogramAsString(Histogram *histogram);
 private:
 	int mRank;
 	int mSize;
 	
-	_histogram_data* makeHistogram(char *word, int cursor);
-
+	Histogram* makeHistogram(char *word, int cursor);
+	
+	Histogram** copyListToArray(list<Histogram*> *histogram_list, int &size);
 };
 
 #endif	/* _FILEUTIL_H */

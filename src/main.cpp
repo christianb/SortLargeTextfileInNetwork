@@ -28,7 +28,7 @@ void sendIntegerListToNode(int node, list<int*> *data) {
 	}
 }
 
-void sendHistogram(int node, list<_histogram_data*> *data) {
+void sendHistogram(int node, list<Histogram*> *data) {
 	int size = data->size();
 	
 	// First send the total number of elements in the vector
@@ -37,9 +37,9 @@ void sendHistogram(int node, list<_histogram_data*> *data) {
 	cout << "send size = " << size << endl;
 	
 	int c = 1;
-	for (list<_histogram_data*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
+	for (list<Histogram*>::iterator l_it = data->begin(); l_it != data->end(); l_it++) {		
 		// send the int*
-		_histogram_data* _element = *l_it;
+		Histogram* _element = *l_it;
 		unsigned char* _array = _element->array;
 		MPI_Send(_array, 52,MPI_CHAR,node,0,MPI_COMM_WORLD);
 		
@@ -80,7 +80,7 @@ void sendListToNode(int node, list<char*> *data) {
 	
 }
 
-list<_histogram_data*>* receiveHistogram(int node) {
+list<Histogram*>* receiveHistogram(int node) {
 	cout << "call receiveHistogram(" << node << ")" << endl;
 	MPI_Status status;
 	// First receive the size of the vector
@@ -90,7 +90,7 @@ list<_histogram_data*>* receiveHistogram(int node) {
 	cout << "received that " << size << " elements will come..." << endl;
 	
 	int c = 1;
-	list<_histogram_data*>* histogram_list = new list<_histogram_data*>();
+	list<Histogram*>* histogram_list = new list<Histogram*>();
 	for(int i = 0; i < size; i++) {
 		unsigned char *value = (unsigned char*) malloc(sizeof(unsigned char) * 52);
 		
@@ -99,7 +99,7 @@ list<_histogram_data*>* receiveHistogram(int node) {
 		int cursor;
 		MPI_Recv (&cursor,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
 		
-		_histogram_data* _new_histogram = (_histogram_data*) malloc (sizeof(_histogram_data*));
+		Histogram* _new_histogram = (Histogram*) malloc (sizeof(Histogram));
 		_new_histogram->array = value;
 		_new_histogram->cursor = cursor;
 		
@@ -170,7 +170,7 @@ list<char*>* receiveListFromNode(int node) {
 	return data;
 }
 
-void printHistogram(_histogram_data* _histogram) {
+void printHistogram(Histogram* _histogram) {
 	unsigned char* histogram = _histogram->array;
 	for (int i = 0 ; i < 26 ; i++) {
 		int c = 'A' + i;
@@ -273,20 +273,29 @@ int main (int argc, char *argv[]) {
     
     FileUtil *futil = new FileUtil(myrank, size);
     // read content from file
-    list<_histogram_data*> *histogram_list = futil->readFile();
+    Histogram** histogram_array = futil->readFile();
+	if (histogram_array == NULL) {
+		cout << "something went wrong in FileUtil readFile() !" << endl;
+		MPI_Finalize();
+		return EXIT_SUCCESS;
+	}
 	
+	//printHistogram(histogram_array[0]);
+	//cout << "histogram[0]->array = " << histogram_array[0]->array << endl;
+	//cout << "histogram[0]->cursor = " << histogram_array[0]->cursor << endl;
 	//printHistogram(histogram_list->front());
 
 	Mergesort *mergesort = new Mergesort(); 
-    	list<_histogram_data*> *sorted_Histogram = mergesort->sort(histogram_list);
+    //Histogram** sorted_Histogram = mergesort->sort(histogram_array);
+	
 	//cout << "sorted list size = " << sorted_Histogram->size() << endl;
 	//printHistogramAsString(sorted_Histogram);
 	
-    	//list<_histogram_data*> *sorted_Histogram = histogram_list;
+    	//list<Histogram*> *sorted_Histogram = histogram_list;
     
 
     /** Am Anfang hat jeder Knoten seine Daten eingelesen und einmal sortiert. **/
-    
+  /*  
     // solange wie mehr als 1 Element im Vector ist tue...
     while (activeNodes->size() > 1) {
         // jetzt müssen wir bestimmen ob dieser Prozess empfangen oder senden soll?
@@ -300,7 +309,7 @@ int main (int argc, char *argv[]) {
             
             if (successor != -1) { // wenn es einen nachfolger gibt emofange und merge
 				cout << "node: " << myrank << " empfange von node:" << successor << endl;
-                list<_histogram_data*> *received_Histogram = receiveHistogram(successor);
+                list<Histogram*> *received_Histogram = receiveHistogram(successor);
 
     	        // do merge
     	        sorted_Histogram = mergesort->merge(sorted_Histogram, received_Histogram);
@@ -331,6 +340,9 @@ int main (int argc, char *argv[]) {
 	cout << sorted_Histogram->size() << "words are sorted." << endl;
 	
 	futil->writeOriginalWordsFromHistogram(sorted_Histogram);
+	*/
+	
+	
     // hier ist jetzt nur noch ein Element in der Liste
     // nun liegt die sortierte List vor...
     

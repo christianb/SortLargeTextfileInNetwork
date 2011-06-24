@@ -12,9 +12,9 @@ using namespace std;
 class Mergesort {
 		
 public:
-	list<_histogram_data*>* sort(list<_histogram_data*> *l);
+	list<Histogram*>* sort(list<Histogram*> *l);
 
-	list<_histogram_data*>* merge(list<_histogram_data*> *left, list<_histogram_data*> *right);
+	list<Histogram*>* merge(list<Histogram*> *left, list<Histogram*> *right);
 	
 private:
 	int getSumOfLetterCaseInsensitive(int indexLetter, unsigned char* histogram);

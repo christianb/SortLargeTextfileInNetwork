@@ -3,10 +3,10 @@
 
 using namespace std;
 
-list<_histogram_data*>* Mergesort::sort(list<_histogram_data*> *l){
-	list<_histogram_data*> *leftList = new list<_histogram_data*>();
-	list<_histogram_data*> *rightList = new list<_histogram_data*>();
-	list<_histogram_data*> *result = new list<_histogram_data*>();;
+list<Histogram*>* Mergesort::sort(list<Histogram*> *l){
+	list<Histogram*> *leftList = new list<Histogram*>();
+	list<Histogram*> *rightList = new list<Histogram*>();
+	list<Histogram*> *result = new list<Histogram*>();;
 	
 	// Gesamtlänge und Mitte der Liste bestimmen
 	int listLength = l->size();
@@ -17,7 +17,7 @@ list<_histogram_data*>* Mergesort::sort(list<_histogram_data*> *l){
 		return l;
 	} else {
 		
-		list<_histogram_data*>::iterator it;
+		list<Histogram*>::iterator it;
 		it = l->begin();
 		
 		// Pointer auf Mitte der Liste setzen
@@ -49,10 +49,10 @@ int Mergesort::getSumOfLetterCaseInsensitive(int indexLetter, unsigned char* his
     return 0;
 }
 
-list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_histogram_data*> *right){	
-	list<_histogram_data*>* newList = new list<_histogram_data*>(); // mergedList
-	list<_histogram_data*>::iterator leftIt;
-    list<_histogram_data*>::iterator rightIt;
+list<Histogram*>* Mergesort::merge(list<Histogram*> *left, list<Histogram*> *right){	
+	list<Histogram*>* newList = new list<Histogram*>(); // mergedList
+	list<Histogram*>::iterator leftIt;
+    list<Histogram*>::iterator rightIt;
 	
 	
 	while (left->size() > 0 || right->size() > 0){
@@ -64,10 +64,10 @@ list<_histogram_data*>* Mergesort::merge(list<_histogram_data*> *left, list<_his
 				
 		if (left->size() > 0 && right->size() > 0) {		// Beide Listen beinhalten noch Elemente
 
-			_histogram_data* _leftHistogram = *leftIt;
+			Histogram* _leftHistogram = *leftIt;
             unsigned char *leftHistogram = _leftHistogram->array;
 
-			_histogram_data* _rightHistogram = *rightIt;
+			Histogram* _rightHistogram = *rightIt;
             unsigned char *rightHistogram = _rightHistogram->array;
             
             // get sum and compare

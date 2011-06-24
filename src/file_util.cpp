@@ -7,7 +7,7 @@ FileUtil::FileUtil(int rank, int size) {
 	this->mSize = size;
 }
 
-_histogram_data* FileUtil::makeHistogram(char *word, int cursor) {
+Histogram* FileUtil::makeHistogram(char *word, int cursor) {
 	int len = strlen(word);
 	
 	unsigned char *histogram = (unsigned char*) malloc(sizeof(unsigned char) * 52);
@@ -26,7 +26,7 @@ _histogram_data* FileUtil::makeHistogram(char *word, int cursor) {
 		}
 	}
 	
-	_histogram_data* _histogram = (_histogram_data*) malloc (sizeof(_histogram_data));
+	Histogram* _histogram = (Histogram*) malloc (sizeof(Histogram));
 	_histogram->array = histogram;
 	_histogram->cursor = cursor;
 	
@@ -67,7 +67,7 @@ list<char*>* FileUtil::readAllPosition(list<int*> *coursors) {
 }
 
 // read all words from a file
-list<_histogram_data*>* FileUtil::readFile() {
+Histogram** FileUtil::readFile() {
 	//cout << "call read file" << endl;
 	
 	string name = "./Euler.txt";
@@ -76,7 +76,7 @@ list<_histogram_data*>* FileUtil::readFile() {
 
 	if (is.fail()) {
 		cout << "File: "<< name << " not found!" << endl;
-		return new list<_histogram_data*>();
+		return NULL;
 	}
 
 	// 1) determine the length of the file
@@ -143,7 +143,7 @@ list<_histogram_data*>* FileUtil::readFile() {
  
   //cout << "start to read from file..." << endl;
   //list<char*> *words = new list<char*>();
-	list<_histogram_data*> *histogram_list = new list<_histogram_data*>();
+	list<Histogram*> *histogram_list = new list<Histogram*>();
 	
 	int index = 1;
 	do {
@@ -169,8 +169,35 @@ list<_histogram_data*>* FileUtil::readFile() {
 		
 		index++;
 	} while (is.tellg() <= to && is.good());
+	
+	//Histogram* array = copyListToArray(histogram_list);
+	//int te = sizeof(array) / ((sizeof(char)*52) + sizeof(int));// + sizeof(int));
+	int size;
+	Histogram** histogram_array = copyListToArray(histogram_list, size);
+	delete (histogram_list);
+	
 
-	return histogram_list;
+	return histogram_array;
+}
+
+Histogram** FileUtil::copyListToArray(list<Histogram*> *histogram_list, int &length) {
+	int size = histogram_list->size();
+	length = size;
+	
+	Histogram *h[size];
+	
+	int index = 0;
+	for (list<Histogram*>::iterator it = histogram_list->begin(); it != histogram_list->end(); it++) {
+		Histogram *value = *it;
+		h[index] = value;
+		index++;
+		
+	}
+	
+	Histogram **p; // pointer der auf ein array zeigt
+	p = (Histogram **)malloc(sizeof(Histogram*[size]));
+	p = h;
+	return p;
 }
 
 // print all words in list
@@ -224,7 +251,7 @@ list<int*>* FileUtil::readFilePositions() {
 	return coursors;
 }
 
-string* FileUtil::printHistogramAsString(_histogram_data *histogram) {
+string* FileUtil::printHistogramAsString(Histogram *histogram) {
 	string *s_histogram = new string();
 	
 	unsigned char* element = histogram->array;
@@ -246,15 +273,15 @@ string* FileUtil::printHistogramAsString(_histogram_data *histogram) {
 	return s_histogram;
 }
 
-void FileUtil::writeOriginalWordsFromHistogram(list<_histogram_data*> *histogram_list) {
+void FileUtil::writeOriginalWordsFromHistogram(list<Histogram*> *histogram_list) {
 	ofstream out("./sortedList.txt");
 	ofstream out_related("./related_word_histogram.txt");
 	ifstream ifs("./Euler.txt");
 	
 	int index = 1;
-	for (list<_histogram_data*>::iterator it = histogram_list->begin() ; it != histogram_list->end() ; it++) {
+	for (list<Histogram*>::iterator it = histogram_list->begin() ; it != histogram_list->end() ; it++) {
 		// get cursor position
-		_histogram_data* histogram = *it;
+		Histogram* histogram = *it;
 		int cursor = histogram->cursor;
 		string word;
 		ifs.seekg(cursor, ios::beg);
