@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "Histogram.h"
 
 void printHistogram(Histogram *h, int index);
-void printHistogramArray(Histogram *h, int size) {
+void printHistogramArray(Histogram *h, int size);
 
 #endif /* TERMINAL_H */

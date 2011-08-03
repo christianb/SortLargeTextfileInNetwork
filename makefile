@@ -2,14 +2,13 @@
 # Last update 02.05.2011
 
 # Define C Compiler
-CC = mpic++
-# Define standard flags
-CFLAGS = -Wall -Wextra -g -DLexic_Compare
+CC = mpicc
 
 # Files to be compiled
-OBJECTS = $(SRC)/main.o \
-$(SRC)/file_util.o \
-$(SRC)/mergesort.o \
+OBJECTS = $(SRC)/fstream.o \
+$(SRC)/File_IO.o \
+$(SRC)/Terminal_IO.o \
+$(SRC)/Sort.o \
 
 # program name 
 NAME = benchmark
@@ -25,19 +24,22 @@ TARGET = $(BIN)/$(NAME)
 
 install: clean compile
 
-compile: main.o fileutil.o mergesort.o
-		mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
+compile: fstream.o File_IO.o Terminal_IO.o Sort.o
+	mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
 
-main.o: $(SRC)/main.cpp
-		$(CC) -c $(SRC)/main.cpp -o $(SRC)/main.o
+fstream.o: $(SRC)/fstream.c
+	$(CC) -c $(SRC)/fstream.c -o $(SRC)/fstream.o
 
-fileutil.o: $(SRC)/file_util.cpp
-		$(CC) -c $(SRC)/file_util.cpp -o $(SRC)/file_util.o
+File_IO.o: $(SRC)/File_IO.c
+	$(CC) -c $(SRC)/File_IO.c -o $(SRC)/File_IO.o
 		
-mergesort.o: $(SRC)/mergesort.cpp
-		$(CC) -c $(SRC)/mergesort.cpp -o $(SRC)/mergesort.o
+Terminal_IO.o: $(SRC)/Terminal_IO.c
+		$(CC) -c $(SRC)/Terminal_IO.c -o $(SRC)/Terminal_IO.o
+
+Sort.o: $(SRC)/Sort.c
+		$(CC) -c $(SRC)/Sort.c -o $(SRC)/Sort.o
 
 clean:	FORCE
-		rm -f $(OBJECTS)
+	rm -f $(OBJECTS)
 
 FORCE:

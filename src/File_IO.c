@@ -2,11 +2,6 @@
 
 #define RAISE 100;
 
-typedef struct {
-	char letter[52];
-	int cursor;
-} Histogram;
-
 /**
  * Fügt ein Charakter dem Histogram an einer Position hinzu.
  * @param h Zeiger auf das Histogram.
@@ -14,7 +9,17 @@ typedef struct {
  * @param c Charakter das dem Histogram hinzugefügt werden soll.
  */
 void addCharToHistogram(Histogram *h, int index, char c) {
-	h[index].letter[(int) c]++;
+	//printf("call addCharToHistogram(%c)\n",c); 	
+	// kleinbuchstaben
+	if (c >= 'a' && c <= 'z') {
+		h[index].letter[c - 'A'-6]++;	
+	}
+
+	// großbuchstaben
+	if (c >= 'A' && c <= 'Z') {
+		//printf("h[%d].letter[%c]++\n",index, (char) c-'A');
+		h[index].letter[c - 'A']++;	
+	}
 }
 
 /**
@@ -52,18 +57,28 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	// Erste Cursor position ist der Wert von From!
 	addCursorToHistogram(h, index, from);
 	
+	int changeStateOfHistogram = 0;
+
 	do { // Lese Zeichen bis \n entdeckt wird
 		c = fgetc(datei); // Lese Zeichen
 		if (c != '\n') {
+			printf("Lese Zeichen: %c\n", c);
 			// Wenn kein Zeilenumbruch dann Füge Zeichen dem Histogram hinzu.
 			// Jede Zeile ist ein eigenes Histogram
 			addCharToHistogram(h, index, c);
+			if (changeStateOfHistogram == 0) {
+				changeStateOfHistogram = 1;
+			}
+
 		} else {
 			// Wenn c ein Zeilenumbruch ist
-			index++;
-			if (index >= *size) {
-				*size += RAISE; // Erhöhe den Speicher um x
-				h = realloc(h, (*size)*sizeof(Histogram));
+			if (changeStateOfHistogram == 1) {
+				index++;
+				changeStateOfHistogram = 0;
+				if (index >= *size) {
+					*size += RAISE; // Erhöhe den Speicher um x
+					h = realloc(h, (*size)*sizeof(Histogram));
+				}
 			}
 			
 			// Füge Cursor dem Histogram hinzu
@@ -92,9 +107,9 @@ Histogram* readFile(const int myRank, const int numRank, Histogram *h, int *size
 	FILE *datei;
 
    /* Bitte Pfad und Dateinamen anpassen */
-   datei = fopen("../Euler.txt", "r");
+   datei = fopen("Euler.txt", "r");
    if(NULL == datei) {
-      printf("Konnte Datei \"Euler.txt\" nicht öffnen!\n");
+      printf("Konnte Datei Euler.txt nicht öffnen!\n");
       return;
    }
 
