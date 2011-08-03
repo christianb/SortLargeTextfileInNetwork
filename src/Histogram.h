@@ -2,8 +2,8 @@
 #define HISTOGRAM_H
 
 typedef struct {
-	char letter[52];
-	int cursor;
+	unsigned char letter[52];
+	unsigned int cursor;
 } Histogram;
 
 #endif /* HISTOGRAM_H */

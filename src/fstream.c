@@ -23,15 +23,18 @@ int main (int argc, char *argv[]) {
 	Histogram *h = NULL;
 	int size = 0;
 	
+	// Lese Datei und bekomme das die Histogramme zurück.
 	h = readFile(myRank, ranks, h, &size);
 	
+	/*
 	if (myRank == 0) {
 		printHistogramArray(h, size);
 	}
-
+*/
 	// Hier haben wir nun das Histogram dieses Prozesses.
 
 	// Das Histogram soll nun sortiert werden.
+	// sort(...)
 
 	MPI_Finalize();
 

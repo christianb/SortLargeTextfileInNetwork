@@ -9,6 +9,7 @@ OBJECTS = $(SRC)/fstream.o \
 $(SRC)/File_IO.o \
 $(SRC)/Terminal_IO.o \
 $(SRC)/Sort.o \
+$(SRC)/Communication.o \
 
 # program name 
 NAME = benchmark
@@ -24,7 +25,7 @@ TARGET = $(BIN)/$(NAME)
 
 install: clean compile
 
-compile: fstream.o File_IO.o Terminal_IO.o Sort.o
+compile: fstream.o File_IO.o Terminal_IO.o Sort.o Communication.o
 	mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
 
 fstream.o: $(SRC)/fstream.c
@@ -38,6 +39,9 @@ Terminal_IO.o: $(SRC)/Terminal_IO.c
 
 Sort.o: $(SRC)/Sort.c
 		$(CC) -c $(SRC)/Sort.c -o $(SRC)/Sort.o
+
+Communication.o: $(SRC)/Communication.c
+		$(CC) -c $(SRC)/Communication.c -o $(SRC)/Communication.o
 
 clean:	FORCE
 	rm -f $(OBJECTS)
