@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
 	double startTime, endTime, timeUsed;
 	startTime = MPI_Wtime(); // set start time
 	
-  const char* filename = "Euler.txt";
+  const char* filename = "sortMe_1000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	h = readFile(filename, myRank, ranks, h, &size);
   
@@ -49,8 +49,8 @@ int main (int argc, char *argv[]) {
   startTime = MPI_Wtime();
 
 	// Das Histogram soll nun sortiert werden.
-	h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
-  printf("h[7].cursor = %d\n", h[7].cursor);
+	//h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
+  //printf("h[7].cursor = %d\n", h[7].cursor);
 
   /************* TEST *********************/
   /*Histogram *h1 = (Histogram*) malloc (sizeof(Histogram)*4);
@@ -80,7 +80,7 @@ int main (int argc, char *argv[]) {
   /****************************************/
 
 
-  printf ("Sort: DONE\n");
+  //printf ("Sort: DONE\n");
   endTime = MPI_Wtime();
 	timeUsed = endTime - startTime;
   printf("time used to sort file: %s = %lf \n", filename, timeUsed);
@@ -88,6 +88,9 @@ int main (int argc, char *argv[]) {
   // h ist nun sortiert.
   // also sollte der inhalt von h mal asugegeben werden
   printHistogramArray(h, size);
+
+	//printf("h[100] = ");
+	//printHistogramStruct(h, 100);
 
 	MPI_Finalize();
 

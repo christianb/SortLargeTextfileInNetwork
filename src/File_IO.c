@@ -9,16 +9,14 @@
  * @param c Charakter das dem Histogram hinzugefügt werden soll.
  */
 void addCharToHistogram(Histogram *h, int index, char c) {
-	//printf("call addCharToHistogram(%c)\n",c); 	
 	// kleinbuchstaben
 	if (c >= 'a' && c <= 'z') {
-		h[index].letter[c - 'A'-6]++;	
+		h[index].letter[c - 97 + 26]++;	
 	}
 
 	// großbuchstaben
 	if (c >= 'A' && c <= 'Z') {
-		//printf("h[%d].letter[%c]++\n",index, (char) c-'A');
-		h[index].letter[c - 'A']++;	
+		h[index].letter[c - 65]++;	
 	}
 }
 
@@ -31,7 +29,18 @@ void addCharToHistogram(Histogram *h, int index, char c) {
 void addCursorToHistogram(Histogram *h, int index, int cursor) {
 	//h[index].cursor = (int*) malloc (sizeof(int));
 	h[index].cursor = cursor;
-	printf("h[%d].cursor = %d\n", index, h[index].cursor);
+	//printf("h[%d].cursor = %d\n", index, h[index].cursor);
+}
+
+/** 
+ * Initialisiert ein Histogram.
+ */
+void init(Histogram* h, int index) {
+	h[index].cursor = -1;
+	int i;
+	for (i = 0; i < 52; i++) {
+		h[index].letter[i] = 0;	
+	}
 }
 
 /** 
@@ -51,7 +60,7 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	h = (Histogram*) malloc (sizeof(Histogram) * (*size));
 	int index = 0; // Zähle die Histogramme hoch, nach jedem Zeilenende.
 	char c;	
-	
+	init(h, index);
 	//h[index].letter = (char) malloc (sizeof(char) * 52);
 	
 	// Erste Cursor position ist der Wert von From!
@@ -60,17 +69,23 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	BOOL changeStateOfHistogram = FALSE;
 
 	do { // Lese Zeichen bis \n entdeckt wird
+		
 		c = fgetc(datei); // Lese Zeichen
-		if (c != '\n') {
-			//printf("Lese Zeichen: %c\n", c);
+		if (isalpha(c) != 0) {
+			if (index == 100)
+			printf("Lese Zeichen: %c\n", c);
 			// Wenn kein Zeilenumbruch dann Füge Zeichen dem Histogram hinzu.
 			// Jede Zeile ist ein eigenes Histogram
 			addCharToHistogram(h, index, c);
 			if (changeStateOfHistogram == FALSE) {
 				changeStateOfHistogram = TRUE;
 			}
-
-		} else {
+			continue;
+		}
+		
+		if (c == '\n') {
+			if (index == 100)
+			printHistogramStruct(h, 100);
 			// Wenn c ein Zeilenumbruch ist
 			if (changeStateOfHistogram == TRUE) {
 				index++;
@@ -79,6 +94,7 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 					*size += RAISE; // Erhöhe den Speicher um x
 					h = realloc(h, (*size)*sizeof(Histogram));
 				}
+				init(h, index);
 			}
 			
 			// Füge Cursor dem Histogram hinzu

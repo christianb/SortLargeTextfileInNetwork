@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "Histogram.h"
 
 void addCharToHistogram(Histogram *h, int index, char c);
