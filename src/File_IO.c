@@ -66,14 +66,14 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	// Erste Cursor position ist der Wert von From!
 	addCursorToHistogram(h, index, from);
 	
-	BOOL changeStateOfHistogram = FALSE;
+	bool changeStateOfHistogram = FALSE;
 
 	do { // Lese Zeichen bis \n entdeckt wird
 		
 		c = fgetc(datei); // Lese Zeichen
 		if (isalpha(c) != 0) {
-			if (index == 100)
-			printf("Lese Zeichen: %c\n", c);
+			//if (index == 100)
+			//printf("Lese Zeichen: %c\n", c);
 			// Wenn kein Zeilenumbruch dann Füge Zeichen dem Histogram hinzu.
 			// Jede Zeile ist ein eigenes Histogram
 			addCharToHistogram(h, index, c);
@@ -84,8 +84,8 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 		}
 		
 		if (c == '\n') {
-			if (index == 100)
-			printHistogramStruct(h, 100);
+			//if (index == 100)
+			//printHistogramStruct(h, 100);
 			// Wenn c ein Zeilenumbruch ist
 			if (changeStateOfHistogram == TRUE) {
 				index++;

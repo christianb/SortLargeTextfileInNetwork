@@ -50,7 +50,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
   int index_left = 0;
   int index_right = 0;
 
-  BOOL didMerge = FALSE;
+  bool didMerge = FALSE;
 
   while (index_left < (*size_left) || index_right < (*size_right)) { // Solange der Index der jewiligen Hälfte nicht größer / gleich ist wie die size
     if (index_left < (*size_left) && index_right < (*size_right)) { // ...

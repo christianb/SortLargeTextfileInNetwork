@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
 	double startTime, endTime, timeUsed;
 	startTime = MPI_Wtime(); // set start time
 	
-  const char* filename = "sortMe_1000.txt";
+  const char* filename = "sortMe_100.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	h = readFile(filename, myRank, ranks, h, &size);
   
@@ -49,7 +49,7 @@ int main (int argc, char *argv[]) {
   startTime = MPI_Wtime();
 
 	// Das Histogram soll nun sortiert werden.
-	//h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
+	h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
   //printf("h[7].cursor = %d\n", h[7].cursor);
 
   /************* TEST *********************/
