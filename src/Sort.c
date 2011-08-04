@@ -1,7 +1,10 @@
 #include "Sort.h"
 
 Histogram* sort(Histogram *data, int *size) {
-  if (*size <= 1) { // Abbruchbedingung der Rekursion!!
+  //printf("call sort(), size = %d\n", *size);
+  //printHistogramArray(data, *size);
+
+  if (*size == 1) { // Abbruchbedingung der Rekursion!!
     // Wenn nur ein Element vorhanden ist gebe dieses zurück.
     return data;
   }
@@ -17,10 +20,10 @@ Histogram* sort(Histogram *data, int *size) {
   // Speicher für die zwei Hälften allokieren.
   Histogram *left = (Histogram*) malloc (sizeof(Histogram) * size_left);
   Histogram *right = (Histogram*) malloc (sizeof(Histogram) * size_right);
-  
+
   // Elemente in den neuen Speicher kopieren.
-  memmove (left, data, size_left); // kopiere die erste Hälfte
-  memmove (right, (data+size_left), size_right); // kopiert die zweite Hälfte der Elemente
+  memcpy (left, data, size_left*sizeof(Histogram)); // kopiere die erste Hälfte
+  memcpy (right, (data+size_left), size_right*sizeof(Histogram)); // kopiert die zweite Hälfte der Elemente
 
   // Speicher Freigeben
   free(data);
@@ -30,10 +33,16 @@ Histogram* sort(Histogram *data, int *size) {
   right = sort(right, &size_right);
 
   // mergen und das Ergebnis zurückgeben
-  return merge(left, &size_left, right, &size_right);
+  Histogram *result = merge(left, &size_left, right, &size_right);
+
+  free(left);
+  free(right);
+
+  return result;
 }
 
 Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_right) {
+  //printf("call merge()\n");
   // Allokiere Speicher, so das beide Hälften (sortiert) hier gespeichert werden können.
   Histogram *merged = (Histogram*) malloc (sizeof(Histogram) * (*size_left + *size_right));
   int index_merged = 0;  
@@ -55,7 +64,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
 
         if (sumLeftHistogram < sumRightHistogram) { // Rechts hat mehr gleiche Buchstaben
           // ok rechtes Histogram kommt zuertst
-          memmove((merged+index_merged), (right+index_right), sizeof(Histogram));
+          memcpy((merged+index_merged), (right+index_right), sizeof(Histogram));
           index_merged++;
           index_right++;
           didMerge = TRUE;
@@ -64,7 +73,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
 
         if (sumLeftHistogram > sumRightHistogram) {
           // linkes Histogram kommt zuerst
-          memmove((merged+index_merged), (left+index_left), sizeof(Histogram));
+          memcpy((merged+index_merged), (left+index_left), sizeof(Histogram));
           index_merged++;
           index_left++;
           didMerge = TRUE;
@@ -78,7 +87,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
 
           if (lowerCaseLetterRightHistogram > lowerCaseLetterLeftHistogram) {
             // ok rechtes Histogram kommt zuertst
-            memmove((merged+index_merged), (right+index_right), sizeof(Histogram));
+            memcpy((merged+index_merged), (right+index_right), sizeof(Histogram));
             index_merged++;
             index_right++;
             didMerge = TRUE;
@@ -87,7 +96,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
 
           if (lowerCaseLetterRightHistogram < lowerCaseLetterLeftHistogram) {
             // linkes Histogram kommt zuerst;
-            memmove((merged+index_merged), (left+index_left), sizeof(Histogram));
+            memcpy((merged+index_merged), (left+index_left), sizeof(Histogram));
             index_merged++;
             index_left++;
             didMerge = TRUE;
@@ -102,7 +111,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
 
       if (didMerge == FALSE) {
          // linkes Histogram kommt zuerst;
-         memmove((merged+index_merged), (left+index_left), sizeof(Histogram));
+         memcpy((merged+index_merged), (left+index_left), sizeof(Histogram));
          index_merged++;
          index_left++;
       }
@@ -112,13 +121,13 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
     } else {
       // Nur linke Häfte enthält Elemente    
       if (index_left < (*size_left)) {
-        memmove((merged+index_merged), (left+index_left), sizeof(Histogram));
+        memcpy((merged+index_merged), (left+index_left), sizeof(Histogram));
         index_merged++;
         index_left++;
       }
 
       if (index_right < (*size_right)) {
-        memmove((merged+index_merged), (right+index_right), sizeof(Histogram));
+        memcpy((merged+index_merged), (right+index_right), sizeof(Histogram));
         index_merged++;
         index_right++;
       }

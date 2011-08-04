@@ -49,8 +49,38 @@ int main (int argc, char *argv[]) {
   startTime = MPI_Wtime();
 
 	// Das Histogram soll nun sortiert werden.
-	//h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
-  
+	h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
+  printf("h[7].cursor = %d\n", h[7].cursor);
+
+  /************* TEST *********************/
+  /*Histogram *h1 = (Histogram*) malloc (sizeof(Histogram)*4);
+  h1[0].letter[0] = 1;
+  h1[1].letter[0] = 2;
+  h1[2].letter[0] = 3;
+  h1[3].letter[0] = 4;
+
+  int size_left = 4;
+  int size_right = 1;
+  Histogram *result = sort(h1, &size_left);
+  printf ("result[0].letter[0] = %d\n", result[0].letter[0]);
+  printf ("result[0].letter[0] = %d\n", result[1].letter[0]);
+  printf ("result[0].letter[0] = %d\n", result[2].letter[0]);
+  printf ("result[0].letter[0] = %d\n", result[3].letter[0]);*/
+  /****************************************/
+
+  /************ TEST MEMCPY ***************/
+  /*Histogram *h1 = (Histogram*) malloc (sizeof(Histogram));
+  h1[0].letter[0] = 45;
+
+  Histogram *h2 = (Histogram*) malloc (sizeof(Histogram));
+  memcpy(h2, h1, sizeof(Histogram));
+
+  printf("h2[0].letter[0] = %d\n", h2[0].letter[0]);*/
+
+  /****************************************/
+
+
+  printf ("Sort: DONE\n");
   endTime = MPI_Wtime();
 	timeUsed = endTime - startTime;
   printf("time used to sort file: %s = %lf \n", filename, timeUsed);

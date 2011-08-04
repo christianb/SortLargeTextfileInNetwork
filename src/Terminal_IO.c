@@ -52,6 +52,7 @@ void printHistogramReadable(Histogram *h, int index) {
  * @param size Anzahl der Histogramme
  */
 void printHistogramArray(Histogram *h, int size) {
+  printf("call HistogramArray(), size = %d\n", size);
 	int index;
 	for (index = 0; index < size; index++) {
 		printHistogramReadable(h, index);

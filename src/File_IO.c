@@ -62,7 +62,7 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	do { // Lese Zeichen bis \n entdeckt wird
 		c = fgetc(datei); // Lese Zeichen
 		if (c != '\n') {
-			printf("Lese Zeichen: %c\n", c);
+			//printf("Lese Zeichen: %c\n", c);
 			// Wenn kein Zeilenumbruch dann Füge Zeichen dem Histogram hinzu.
 			// Jede Zeile ist ein eigenes Histogram
 			addCharToHistogram(h, index, c);
