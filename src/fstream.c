@@ -50,7 +50,6 @@ int main (int argc, char *argv[]) {
 
 	// Das Histogram soll nun sortiert werden.
 	//h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
-  printf("h[7].cursor = %d\n", h[7].cursor);
   
   endTime = MPI_Wtime();
 	timeUsed = endTime - startTime;

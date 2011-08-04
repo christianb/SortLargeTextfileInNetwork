@@ -57,24 +57,24 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	// Erste Cursor position ist der Wert von From!
 	addCursorToHistogram(h, index, from);
 	
-	int changeStateOfHistogram = 0;
+	BOOL changeStateOfHistogram = FALSE;
 
 	do { // Lese Zeichen bis \n entdeckt wird
 		c = fgetc(datei); // Lese Zeichen
 		if (c != '\n') {
-			//printf("Lese Zeichen: %c\n", c);
+			printf("Lese Zeichen: %c\n", c);
 			// Wenn kein Zeilenumbruch dann Füge Zeichen dem Histogram hinzu.
 			// Jede Zeile ist ein eigenes Histogram
 			addCharToHistogram(h, index, c);
-			if (changeStateOfHistogram == 0) {
-				changeStateOfHistogram = 1;
+			if (changeStateOfHistogram == FALSE) {
+				changeStateOfHistogram = TRUE;
 			}
 
 		} else {
 			// Wenn c ein Zeilenumbruch ist
-			if (changeStateOfHistogram == 1) {
+			if (changeStateOfHistogram == TRUE) {
 				index++;
-				changeStateOfHistogram = 0;
+				changeStateOfHistogram = FALSE;
 				if (index >= *size) {
 					*size += RAISE; // Erhöhe den Speicher um x
 					h = realloc(h, (*size)*sizeof(Histogram));
@@ -90,9 +90,9 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	//printf("size = %d\n", *size);
 	
 	if ( (index+1) <= (*size) ) {
-		//printf("realloc()");
-		(*size) = index+1;
-		h = realloc(h, (*size)*sizeof(Histogram)); // Reduziere ggf. zu viel allokierten Speicher.
+    *size = index;
+		printf("Reduziere mit realloc() size = %d\n", index);
+		h = realloc(h, (index)*sizeof(Histogram)); // Reduziere ggf. zu viel allokierten Speicher.
 	}
 	
 	return h;
