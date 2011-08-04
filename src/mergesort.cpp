@@ -41,7 +41,7 @@ list<Histogram*>* Mergesort::sort(list<Histogram*> *l){
 int Mergesort::getSumOfLetterCaseInsensitive(int indexLetter, unsigned char* histogram) {
     if (indexLetter < 26) {
         int upperCaseLetter = histogram[indexLetter];
-		int lowerCaseLetter = histogram[indexLetter+26];
+		    int lowerCaseLetter = histogram[indexLetter+26];
         
         return (upperCaseLetter + lowerCaseLetter);
     }
@@ -79,9 +79,9 @@ list<Histogram*>* Mergesort::merge(list<Histogram*> *left, list<Histogram*> *rig
                 if (sumLeftHistogram < sumRightHistogram) {
                     // ok rechtes Histogram kommt zuertst
                     newList->push_back(_rightHistogram);
-					right->erase(rightIt);
-					didMerge = true;
-					//cout << "merge successfull" << endl;
+					          right->erase(rightIt);
+					          didMerge = true;
+					          //cout << "merge successfull" << endl;
                     break;  // stop comparing of this both histograms
                 }
                 

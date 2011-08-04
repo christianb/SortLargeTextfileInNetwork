@@ -44,6 +44,6 @@ Communication.o: $(SRC)/Communication.c
 		$(CC) -c $(SRC)/Communication.c -o $(SRC)/Communication.o
 
 clean:	FORCE
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS); clear
 
 FORCE:

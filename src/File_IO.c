@@ -31,7 +31,7 @@ void addCharToHistogram(Histogram *h, int index, char c) {
 void addCursorToHistogram(Histogram *h, int index, int cursor) {
 	//h[index].cursor = (int*) malloc (sizeof(int));
 	h[index].cursor = cursor;
-	//printf("h[%d].cursor = %d\n", index, *(h[index].cursor));
+	printf("h[%d].cursor = %d\n", index, h[index].cursor);
 }
 
 /** 
@@ -42,11 +42,11 @@ void addCursorToHistogram(Histogram *h, int index, int cursor) {
  * @return int The total Number of Histogramme
 */
 Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *h, int *size) {
-	printf("call readFileFromTo()\n");
+	//printf("call readFileFromTo()\n");
 	fseek(datei, from, SEEK_SET);
 	
 	*size = RAISE;
-	printf("size = %d\n", *size);
+	//printf("size = %d\n", *size);
 	
 	h = (Histogram*) malloc (sizeof(Histogram) * (*size));
 	int index = 0; // Zähle die Histogramme hoch, nach jedem Zeilenende.
@@ -62,7 +62,7 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 	do { // Lese Zeichen bis \n entdeckt wird
 		c = fgetc(datei); // Lese Zeichen
 		if (c != '\n') {
-			printf("Lese Zeichen: %c\n", c);
+			//printf("Lese Zeichen: %c\n", c);
 			// Wenn kein Zeilenumbruch dann Füge Zeichen dem Histogram hinzu.
 			// Jede Zeile ist ein eigenes Histogram
 			addCharToHistogram(h, index, c);
@@ -86,11 +86,11 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
 		}
 	} while (ftell(datei) < to);
 	
-	printf("index = %d\n", index);
-	printf("size = %d\n", *size);
+	//printf("index = %d\n", index);
+	//printf("size = %d\n", *size);
 	
 	if ( (index+1) <= (*size) ) {
-		printf("realloc()");
+		//printf("realloc()");
 		(*size) = index+1;
 		h = realloc(h, (*size)*sizeof(Histogram)); // Reduziere ggf. zu viel allokierten Speicher.
 	}
@@ -103,13 +103,13 @@ Histogram* readFileFromTo(FILE *datei, const int from, const int to, Histogram *
  * @param myrank Der Rang dieses Prozesses.
  * @param numRank Die Gesammtzahl der Prozesse.
 */
-Histogram* readFile(const int myRank, const int numRank, Histogram *h, int *size) {
+Histogram* readFile(const char* filename, const int myRank, const int numRank, Histogram *h, int *size) {
 	FILE *datei;
 
    /* Bitte Pfad und Dateinamen anpassen */
-   datei = fopen("Euler.txt", "r");
+   datei = fopen(filename, "r");
    if(NULL == datei) {
-      printf("Konnte Datei Euler.txt nicht öffnen!\n");
+      printf("Konnte Datei %s nicht öffnen!\n", filename);
       return;
    }
 
@@ -117,7 +117,7 @@ Histogram* readFile(const int myRank, const int numRank, Histogram *h, int *size
 	fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
 	int length = ftell(datei);
 
-	printf("Size of File: %d\n",length);
+	//printf("Size of File: %d\n",length);
 
 	/* Teile die Länge der Datei durch die Anzahl der Prozesse */
 	int devided = length / numRank;
@@ -161,14 +161,15 @@ Histogram* readFile(const int myRank, const int numRank, Histogram *h, int *size
 		fseek(datei, 0, SEEK_END);
 		to = ftell(datei);
 	}
-
+/*
 	printf("Prozess: %d von %d \n", myRank, numRank);
 	printf("From: %d \n", from);
 	printf("TO: %d \n", to);
 
-	
+	*/
 	h = readFileFromTo(datei, from, to, h, size);
 	printf("%d Elements in HistogramArray.\n",*size);
+  
 	
 	return h;
 }

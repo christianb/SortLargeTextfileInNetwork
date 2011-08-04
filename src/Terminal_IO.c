@@ -3,7 +3,7 @@
 /**
  * Druckt ein Histogram im Terminal aus.
  */
-void printHistogram(Histogram *h, int index) {
+void printHistogramStruct(Histogram *h, int index) {
 	int n;
 	// Drucke Cursor
 	printf("h[%d].cursor = %d\n", index, h[index].cursor);
@@ -20,6 +20,32 @@ void printHistogram(Histogram *h, int index) {
 	}
 }
 
+void printHistogramReadable(Histogram *h, int index) {
+  int n,i;
+  char zeile[126] = {' '}; // Laut Aufgabe hat eine Zeile nur max. 126 Zeichen!
+  char l;
+
+  int index_zeile = 0;
+  for (n = 0; n < 26; n++) {
+    // Schreibe Großbuchstaben
+    l = (char) n+65;
+    
+    for (i = 0; i < h[index].letter[n]; i++) {
+      strncpy((zeile+index_zeile), &l, 1);
+      index_zeile++;
+    }
+
+    // Schreibe kleinbuchstaben
+    l = (char) n+97;
+    for (i = 0; i < h[index].letter[n+26]; i++) {
+      strncpy((zeile+index_zeile), &l, 1);
+      index_zeile++;
+    }
+  }
+
+  printf("%d: %s\n", index, zeile);
+}
+
 /**
  * Druckt alle Elemente des Histograms (Letter Array und Cursor) auf dem Terminal aus.
  * @param h Histogramme
@@ -28,6 +54,6 @@ void printHistogram(Histogram *h, int index) {
 void printHistogramArray(Histogram *h, int size) {
 	int index;
 	for (index = 0; index < size; index++) {
-		printHistogram(h, index);
+		printHistogramReadable(h, index);
 	}
 }
