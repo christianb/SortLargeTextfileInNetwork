@@ -3,6 +3,7 @@
 
 # Define C Compiler
 CC = mpicc
+CFLAGS = -Wall -Wextra -g
 
 # Files to be compiled
 OBJECTS = $(SRC)/fstream.o \
@@ -29,19 +30,19 @@ compile: fstream.o File_IO.o Terminal_IO.o Sort.o Communication.o
 	mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
 
 fstream.o: $(SRC)/fstream.c
-	$(CC) -c $(SRC)/fstream.c -o $(SRC)/fstream.o
+	$(CC) -c $(CFLAGS) $(SRC)/fstream.c -o $(SRC)/fstream.o
 
 File_IO.o: $(SRC)/File_IO.c
-	$(CC) -c $(SRC)/File_IO.c -o $(SRC)/File_IO.o
-		
+	$(CC) -c $(CFLAGS) $(SRC)/File_IO.c -o $(SRC)/File_IO.o
+
 Terminal_IO.o: $(SRC)/Terminal_IO.c
-		$(CC) -c $(SRC)/Terminal_IO.c -o $(SRC)/Terminal_IO.o
+	$(CC) -c $(CFLAGS) $(SRC)/Terminal_IO.c -o $(SRC)/Terminal_IO.o
 
 Sort.o: $(SRC)/Sort.c
-		$(CC) -c $(SRC)/Sort.c -o $(SRC)/Sort.o
+	$(CC) -c $(CFLAGS) $(SRC)/Sort.c -o $(SRC)/Sort.o
 
 Communication.o: $(SRC)/Communication.c
-		$(CC) -c $(SRC)/Communication.c -o $(SRC)/Communication.o
+	$(CC) -c $(CFLAGS) $(SRC)/Communication.c -o $(SRC)/Communication.o
 
 clean:	FORCE
 	rm -f $(OBJECTS); clear
