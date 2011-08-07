@@ -7,9 +7,7 @@
 
 #include "Histogram.h"
 
-Histogram* sort(Histogram *data, int *size);
-
-Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_right);
+Histogram* sort(Histogram *data, unsigned int *size);
 
 
 #endif /* SORT_H */

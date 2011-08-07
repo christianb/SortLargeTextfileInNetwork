@@ -22,14 +22,14 @@ int main (int argc, char *argv[]) {
  	MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 	
 	Histogram *h = NULL;
-	int size = 0;
+	unsigned int size = 0;
 
 
   // time variables
 	double startTime, endTime, timeUsed;
 	startTime = MPI_Wtime(); // set start time
 	
-  const char* filename = "sortMe_100.txt";
+  const char* filename = "sortMe_10000000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	h = readFile(filename, myRank, ranks, h, &size);
   
@@ -87,7 +87,7 @@ int main (int argc, char *argv[]) {
 
   // h ist nun sortiert.
   // also sollte der inhalt von h mal asugegeben werden
-  printHistogramArray(h, size);
+  //printHistogramArray(h, size);
 
 	//printf("h[100] = ");
 	//printHistogramStruct(h, 100);

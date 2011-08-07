@@ -1,6 +1,10 @@
 #include "Sort.h"
 
-Histogram* sort(Histogram *data, int *size) {
+int getSumOfLetterCaseInsensitive(short index_letter, unsigned int index, Histogram *histogram);
+
+Histogram* merge(Histogram *left, unsigned int *size_left, Histogram *right, unsigned int *size_right);
+
+Histogram* sort(Histogram *data, unsigned int *size) {
   //printf("call sort(), size = %d\n", *size);
   //printHistogramArray(data, *size);
 
@@ -10,8 +14,8 @@ Histogram* sort(Histogram *data, int *size) {
   }
 
   // Elemente in zwei Hälften teilen
-  int size_left = *size / 2;
-  int size_right = size_left;
+  unsigned int size_left = *size / 2;
+  unsigned int size_right = size_left;
 
   if (*size % 2 != 0) {
     size_right++;
@@ -41,14 +45,14 @@ Histogram* sort(Histogram *data, int *size) {
   return result;
 }
 
-Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_right) {
+Histogram* merge(Histogram *left, unsigned int *size_left, Histogram *right, unsigned int *size_right) {
   //printf("call merge()\n");
   // Allokiere Speicher, so das beide Hälften (sortiert) hier gespeichert werden können.
   Histogram *merged = (Histogram*) malloc (sizeof(Histogram) * (*size_left + *size_right));
-  int index_merged = 0;  
+  unsigned int index_merged = 0;  
 
-  int index_left = 0;
-  int index_right = 0;
+  unsigned int index_left = 0;
+  unsigned int index_right = 0;
 
   bool didMerge = FALSE;
 
@@ -56,11 +60,11 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
     if (index_left < (*size_left) && index_right < (*size_right)) { // ...
       // Wir gehen die Häften Elementweise durch
         
-      int i;
+      short i;
       for (i = 0 ; i < 26 ; i++) { 
         // Vergleiche die Anzahl der Buchstaben (Groß und Klein).
-        int sumLeftHistogram = getSumOfLetterCaseInsensitive(i, index_left, left);
-        int sumRightHistogram = getSumOfLetterCaseInsensitive(i, index_right, right);
+        short sumLeftHistogram = getSumOfLetterCaseInsensitive(i, index_left, left);
+        short sumRightHistogram = getSumOfLetterCaseInsensitive(i, index_right, right);
 
         if (sumLeftHistogram < sumRightHistogram) { // Rechts hat mehr gleiche Buchstaben
           // ok rechtes Histogram kommt zuertst
@@ -82,8 +86,8 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
 
         if (sumLeftHistogram == sumRightHistogram) {
           // Wenn die gleiche Anzahl an Buchstaben, dann kommt das Histogramm mit den meisten kleineren Buchstaben
-          int lowerCaseLetterLeftHistogram = left[index_left].letter[i+26];
-          int lowerCaseLetterRightHistogram = right[index_right].letter[i+26];
+          short lowerCaseLetterLeftHistogram = left[index_left].letter[i+26];
+          short lowerCaseLetterRightHistogram = right[index_right].letter[i+26];
 
           if (lowerCaseLetterRightHistogram > lowerCaseLetterLeftHistogram) {
             // ok rechtes Histogram kommt zuertst
@@ -137,7 +141,7 @@ Histogram* merge(Histogram *left, int *size_left, Histogram *right, int *size_ri
   return merged;
 }
 
-int getSumOfLetterCaseInsensitive(int index_letter, int index, Histogram *histogram) {
+int getSumOfLetterCaseInsensitive(short index_letter, unsigned int index, Histogram *histogram) {
     if (index_letter < 26) {
         int upperCaseLetter = histogram[index].letter[index_letter];
 		    int lowerCaseLetter = histogram[index].letter[index_letter+26];
