@@ -96,7 +96,7 @@ int main (int argc, char *argv[]) {
   // h ist nun sortiert.
   // also sollte der inhalt von h mal asugegeben werden
   //printHistogramArray(mixed, size);
-	writeFile("out.txt", mixed, &size);
+	writeFile("out.txt",filename, mixed, &size);
 
 	//printf("h[100] = ");
 	//printHistogramStruct(h, 100);
