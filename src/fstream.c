@@ -21,7 +21,7 @@ int main (int argc, char *argv[]) {
 	// get number of prozesses
  	MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 	
-	Histogram *h = NULL;
+	Histogram *master = NULL;
 	unsigned int size = 0;
 
 
@@ -29,9 +29,17 @@ int main (int argc, char *argv[]) {
 	double startTime, endTime, timeUsed;
 	startTime = MPI_Wtime(); // set start time
 	
-  const char* filename = "sortMe_10000000.txt";
+  const char* filename = "sortMe_10000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
-	h = readFile(filename, myRank, ranks, h, &size);
+	master = readFile(filename, myRank, ranks, master, &size);
+
+	// Erstelle ein Array das nur die Adressen auf die Elemente im Histogramm speichert
+	Histogram **mixed = (Histogram**) malloc (sizeof(Histogram*)*size);
+
+	unsigned int n;
+	for (n = 0; n < size; n++) { // kopiere die Adressen in das neue Array.	
+		mixed[n] = &master[n];
+	}
   
   endTime = MPI_Wtime();
 	timeUsed = endTime - startTime;	
@@ -49,7 +57,7 @@ int main (int argc, char *argv[]) {
   startTime = MPI_Wtime();
 
 	// Das Histogram soll nun sortiert werden.
-	h = sort(h, &size); // FEHLER IN SORT: Informationen gehen verloren
+	mixed = sort(mixed, &size); // FEHLER IN SORT: Informationen gehen verloren
   //printf("h[7].cursor = %d\n", h[7].cursor);
 
   /************* TEST *********************/

@@ -7,7 +7,7 @@
 
 #include "Histogram.h"
 
-Histogram* sort(Histogram *data, unsigned int *size);
+Histogram** sort(Histogram **data, unsigned int *size);
 
 
 #endif /* SORT_H */
