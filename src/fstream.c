@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
 	double startTime, endTime, timeUsed;
 	startTime = MPI_Wtime(); // set start time
 	
-  const char* filename = "sortMe_10000.txt";
+  const char* filename = "sortMe_100.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	master = readFile(filename, myRank, ranks, master, &size);
 
@@ -95,10 +95,12 @@ int main (int argc, char *argv[]) {
 
   // h ist nun sortiert.
   // also sollte der inhalt von h mal asugegeben werden
-  //printHistogramArray(h, size);
+  printHistogramArray(mixed, size);
 
 	//printf("h[100] = ");
 	//printHistogramStruct(h, 100);
+
+	free(mixed);
 
 	MPI_Finalize();
 

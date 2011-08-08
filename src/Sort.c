@@ -48,8 +48,8 @@ Histogram** sort(Histogram **data, unsigned int *size) {
   // mergen und das Ergebnis zurückgeben
   Histogram **result = merge(left, &size_left, right, &size_right, data);
 
-  //free(left);
-  //free(right);
+  free(left);
+  free(right);
 
   return result;
 }
