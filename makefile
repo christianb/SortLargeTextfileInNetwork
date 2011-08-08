@@ -11,6 +11,7 @@ $(SRC)/File_IO.o \
 $(SRC)/Terminal_IO.o \
 $(SRC)/Sort.o \
 $(SRC)/Communication.o \
+$(SRC)/Histogram.o \
 
 # program name 
 NAME = benchmark
@@ -26,7 +27,7 @@ TARGET = $(BIN)/$(NAME)
 
 install: clean compile
 
-compile: fstream.o File_IO.o Terminal_IO.o Sort.o Communication.o
+compile: fstream.o File_IO.o Terminal_IO.o Sort.o Communication.o Histogram.o
 	mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
 
 fstream.o: $(SRC)/fstream.c
@@ -43,6 +44,9 @@ Sort.o: $(SRC)/Sort.c
 
 Communication.o: $(SRC)/Communication.c
 	$(CC) -c $(CFLAGS) $(SRC)/Communication.c -o $(SRC)/Communication.o
+
+Histogram.o: $(SRC)/Histogram.c
+	$(CC) -c $(CFLAGS) $(SRC)/Histogram.c -o $(SRC)/Histogram.o
 
 clean:	FORCE
 	rm -f $(OBJECTS); clear

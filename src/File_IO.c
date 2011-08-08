@@ -191,6 +191,55 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	h = readFileFromTo(datei, from, to, h, size);
 	printf("%d Elements in HistogramArray.\n",*size);
   
+	fclose(datei);
 	
 	return h;
+}
+
+void writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
+	FILE *out;
+	//FILE *master;
+
+  /* Bitte Pfad und Dateinamen anpassen */
+	out = fopen(filename_out, "w+t");
+	//master = fopen(filename_master, "r");
+
+   if(NULL == out) {
+      printf("Konnte Datei %s nicht öffnen!\n", filename_out);
+      return EXIT_FAILURE;
+   }
+/*
+	if (NULL == master) {
+		printf("Konnte Datei %s nicht oeffnen!\n", filename_master);
+		return EXIT_FAILURE;
+	}
+*/
+	char* zeile;
+	//char original_word[126];
+
+	unsigned int i;
+	unsigned short n;
+
+	for (i = 0; i < *size; i++) {
+		// Hole cursor wo das original wort steht:
+		//unsigned int cursor = (*h[i]).cursor;
+		// gehe in File master zu der Cursor position
+		//fseek(master, 0L, SEEK_SET);
+		// lese zeichen bis Zeilenende
+		//fgets(original_word, 126, master);
+		//fputs(original_word, out);
+		//fputc(':', out);
+		//fputc(' ', out);
+
+		// Hole jedes Histogram	als String
+		zeile = getHistogramAsString(h[i]);
+		/*for (n = 0; n < 126; n++) {
+			fputc(zeile[n], out);			
+		}*/
+		fputs(zeile, out);
+		fputc('\n', out);
+	}
+
+	fclose(out);		
+	//fclose(master);
 }
