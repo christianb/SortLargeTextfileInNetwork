@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
 	double startTime, endTime, timeUsed;
 	startTime = MPI_Wtime(); // set start time
 	
-  const char* filename = "sortMe_10000000.txt";
+  const char* filename = "sortMe.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	master = readFile(filename, myRank, ranks, master, &size);
 

@@ -111,10 +111,12 @@ Histogram* readFileFromTo(FILE *datei, const unsigned int from, const unsigned i
 	//printf("size = %d\n", *size);
 	
 	if ( (index+1) <= (*size) ) {
-    *size = index;
-		printf("Reduziere mit realloc() size = %d\n", index);
+		*size = index;
+		//printf("Reduziere mit realloc() size = %d\n", index+1);
 		h = realloc(h, (index)*sizeof(Histogram)); // Reduziere ggf. zu viel allokierten Speicher.
 	}
+
+	
 	
 	return h;
 }
@@ -195,12 +197,12 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	
 	return h;
 }
-
-void writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
+/*
+int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
 	FILE *out;
 	FILE *in;
 
-  /* Bitte Pfad und Dateinamen anpassen */
+  // Bitte Pfad und Dateinamen anpassen
 	out = fopen(filename_out, "w+t");
 	in = fopen(filename_in, "r");
 
@@ -214,11 +216,12 @@ void writeFile(const char *filename_out, const char *filename_in, Histogram **h,
 		return EXIT_FAILURE;
 	}
 
-	char* zeile;
+	//char* zeile;
 	char original_word[126];
 
 	unsigned int i;
-	unsigned short n;
+	//unsigned short n;
+	int result;
 
 	for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
@@ -229,19 +232,21 @@ void writeFile(const char *filename_out, const char *filename_in, Histogram **h,
 		fgets(original_word, 126, in);
 	
 		// schreibe OriginalZeile		
-		fputs(original_word, out);
+		result = fputs(original_word, out);
 		//fputc(':', out);
 		//fputc(' ', out);
 
 		// Hole jedes Histogram	als String
 		//zeile = getHistogramAsString(h[i]);
-		/*for (n = 0; n < 126; n++) {
-			fputc(zeile[n], out);			
-		}*/
+		//for (n = 0; n < 126; n++) {
+			//fputc(zeile[n], out);			
+		//}
 		//fputs(zeile, out);
 		//fputc('\n', out);
 	}
 
 	fclose(out);		
 	fclose(in);
-}
+
+	return 0;
+}*/

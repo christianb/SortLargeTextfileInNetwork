@@ -6,7 +6,7 @@ char* getHistogramAsString(Histogram *h) {
 
 	// init chars
 	for (i = 0; i < 126; i++) {
-		zeile[i] = NULL;
+		zeile[i] = 0x0;
 	}
   char l;
 
