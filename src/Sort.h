@@ -8,6 +8,6 @@
 #include "Histogram.h"
 
 Histogram** sort(Histogram **data, unsigned int *size);
-
+Histogram** merge(Histogram **left, unsigned int *size_left, Histogram **right, unsigned int *size_right, Histogram **merged);
 
 #endif /* SORT_H */

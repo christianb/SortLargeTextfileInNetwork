@@ -9,7 +9,7 @@
 #include "Histogram.h"
 
 
-void sendHistogram(int node, Histogram *data, int size); // Sende Histogram an Prozess.
-Histogram* receiveHistogram(int node, int *size); // Empfange Histogram von Prozess
+void sendHistogram(int node, Histogram **data, int size); // Sende Histogram an Prozess.
+Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *master, unsigned int size_master); // Empfange Histogram von Prozess
 
 #endif /* COMMUNICATION_H */

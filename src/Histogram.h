@@ -6,7 +6,7 @@
 
 typedef struct {
 	unsigned char letter[52];
-	unsigned int cursor;
+	int cursor;
 } Histogram;
 
 typedef enum { FALSE = 0, TRUE = 1 } bool;
