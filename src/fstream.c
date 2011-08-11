@@ -83,7 +83,7 @@ int main (int argc, char *argv[]) {
   short int *activeNodes = (short int*) malloc (sizeof(short int)*ranks);
   int i;
   for (i = 0; i < ranks; i++) {
-    activeNodes[i] = 0;
+    activeNodes[i] = i;
   }
 
   // Anzahl der Elemente
