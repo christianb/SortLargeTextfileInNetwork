@@ -105,7 +105,8 @@ Histogram* readFileFromTo(FILE *datei, const unsigned int from, const unsigned i
 			// Füge Cursor dem Histogram hinzu
 			addCursorToHistogram(h, index, ftell(datei));
 		}
-	} while ((unsigned) ftell(datei) < to);
+		
+	} while (( (unsigned) ftell(datei) <= to && c != -1));
 	
 	//printf("index = %d\n", index);
 	//printf("size = %d\n", *size);
@@ -135,9 +136,13 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
       printf("Konnte Datei %s nicht öffnen!\n", filename);
       return EXIT_SUCCESS;
    }
+	//fseek(datei, 0L, SEEK_SET); // Cursor an den Anfang setzen.
+	//printf("Anfang in Datei: %d\n",ftell(datei));
 
 	/* Bestimme die Länge der Datei */
 	fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
+	//printf("Ende in Datei: %d \n",ftell(datei));
+	
 	unsigned int length = ftell(datei);
 
 	//printf("Size of File: %d\n",length);
@@ -184,11 +189,10 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 		fseek(datei, 0, SEEK_END);
 		to = ftell(datei);
 	}
-/*
+	/*
 	printf("Prozess: %d von %d \n", myRank, numRank);
 	printf("From: %d \n", from);
 	printf("TO: %d \n", to);
-
 	*/
 	h = readFileFromTo(datei, from, to, h, size);
 	printf("%d Elements in HistogramArray.\n",*size);

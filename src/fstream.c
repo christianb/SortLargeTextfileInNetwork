@@ -14,13 +14,13 @@ int getSuccessorOfNode(int pNr, short int *activeNodes, short int size);
 int getPredecessorOfNode(int pNr, short int *activeNodes, short int size);
 short int* deleteOddProcessNumber(short int *activeNodes, short int *activeNodes_size);
 
-Histogram** initHistogramArray(Histogram *master, unsigned int *size) {
+Histogram** initHistogramArray(Histogram *data, unsigned int *size) {
   // Erstelle ein Array das nur die Adressen auf die Elemente im Histogramm speichert
 	Histogram **mixed = (Histogram**) malloc (sizeof(Histogram*)*(*size));
 
 	unsigned int n;
 	for (n = 0; n < (*size); n++) { // kopiere die Adressen in das neue Array.	
-		mixed[n] = &master[n];
+		mixed[n] = &data[n];
 	}
 	
 	return mixed;
@@ -39,8 +39,8 @@ int main (int argc, char *argv[]) {
 	// get number of prozesses
  	MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 	
-	Histogram *master = NULL;
-	unsigned int size_local = 0;
+	Histogram *data = NULL;
+	unsigned int size_data = 0;
 
   
   // time variables
@@ -50,13 +50,11 @@ int main (int argc, char *argv[]) {
 	  startTime = MPI_Wtime(); // set start time
   }
 	
-  const char* filename = "sortMe.txt";
+  const char* filename = "sortMe_1000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
-	//master = readFile(filename, myRank, ranks, master, &size_local);
+	data = readFile(filename, myRank, ranks, data, &size_data);
 
-  //Histogram **mixed_local = initHistogramArray(master, &size_local);
-
-  
+  Histogram **ref_data = initHistogramArray(data, &size_data);
 
 	// Hier haben wir nun das Histogram dieses Prozesses.
 
@@ -65,7 +63,7 @@ int main (int argc, char *argv[]) {
   }
 
 	// Das Histogram soll nun sortiert werden.
-	//mixed_local = sort(mixed_local, &size_local); // FEHLER IN SORT: Informationen gehen verloren
+	ref_data = sort(ref_data, &size_data); // FEHLER IN SORT: Informationen gehen verloren
   
   if (myRank == 0) {
     endTime = MPI_Wtime();
@@ -89,7 +87,7 @@ int main (int argc, char *argv[]) {
   // Anzahl der Elemente
   short int activeNodes_size = ranks;
 
-  //Histogram **sorted_merged_Histogram = mixed_local;
+  //Histogram **sorted_merged_Histogram = ref_data;
 
   // solange wie mehr als 1 Element im activeNodes Array vorhanden ist
   while (activeNodes_size > 1) {
@@ -105,20 +103,22 @@ int main (int argc, char *argv[]) {
       if (successor != -1) { // wenn es einen nachfolger gibt empfange und merge
         printf("Prozess: %d empfaengt von Prozess: %d \n", myRank, successor);
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
-        /*receiveHistogram(successor, &size_received, master, size_local); 
+        
+        // Empfange Datan, data wird entprechend erweitert
+        receiveHistogram(successor, &size_received, data, size_data); 
 
-        Histogram **mixed_received = initHistogramArray((master+size_local), &size_received);
+				// Referenz auf die empfangenen Daten, für die sortierung.
+        Histogram **ref_received_data = initHistogramArray((data+size_data), &size_received);
 
-        Histogram **sorted_local_received = (Histogram**) malloc (sizeof(Histogram*)*(size_local+size_received));
+				// In diesem Speicherbereich kommen die Referenzen beider 
+        Histogram **sorted = (Histogram**) malloc (sizeof(Histogram*)*(size_data+size_received));
 
         // do merge
-    	  sorted_merged_Histogram = merge(mixed_local, &size_local, mixed_received, &size_received,  sorted_local_received);
+    	  sorted = merge(ref_data, &size_data, ref_received_data, &size_received,  sorted);
     	  
-    	  free(mixed_local);
-    	  free(mixed_received);
-    	  
-    	  mixed_local = sorted_local_received;
-    	  size_local += size_received;*/
+    	  // ref_data zeigt nun auf die sortierten referenzen
+    	  ref_data = sorted;
+    	  size_data += size_received; // merke die neue anzahl der elemente
       }
       
       // in jedem fall lösche knoten, die gesendet haben aus liste
@@ -133,7 +133,10 @@ int main (int argc, char *argv[]) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
       //printf("Prozess: %d sendet an Prozess: %d", myRank, predecessor);
-      //sendHistogram(predecessor, sorted_merged_Histogram, size_local);
+      sendHistogram(predecessor, ref_data, size_data);
+
+			free(ref_data); // Array mit Pointern auf Histogramme
+			free(data); // Original
 
       // DONE!
       MPI_Finalize();
@@ -143,22 +146,21 @@ int main (int argc, char *argv[]) {
   }
   
   
-  /*
+  
   if (myRank == 0) {
     printf("All done! \n");
   
     endTime = MPI_Wtime();
 	  timeUsed = endTime - startTime;	
 
-    printf("%d elements in array!\n",size_local);
+    printf("%d elements in array!\n",size_data);
     printf("time used = %lf \n", timeUsed);
-  }*/
+  }
 
-	//free(mixed_local); // Array mit Pointern auf Histogramme
-	//free(master); // Original
+	free(ref_data); // Array mit Pointern auf Histogramme
+	free(data); // Original
 
 	MPI_Finalize();
-
 	return EXIT_SUCCESS;
 }
 
