@@ -44,10 +44,11 @@ int main (int argc, char *argv[]) {
 
   
   // time variables
-	double startTime, endTime, timeUsed;
+	double startTime, endTime, timeUsed, totalTime;
 	
 	if (myRank == 0) {
 	  startTime = MPI_Wtime(); // set start time
+	  totalTime = startTime;
   }
 	
   const char* filename = "sortMe.txt";
@@ -58,15 +59,12 @@ int main (int argc, char *argv[]) {
     endTime = MPI_Wtime();
 	  timeUsed = endTime - startTime;
     printf("time used to read file: %s = %lf \n", filename, timeUsed);
+    startTime = MPI_Wtime();
   }
   
   Histogram **ref_data = initHistogramArray(data, &size_data);
   
 	// Hier haben wir nun das Histogram dieses Prozesses.
-
-  if (myRank == 0) {
-    startTime = MPI_Wtime();
-  }
 
 	// Das Histogram soll nun sortiert werden.
 	ref_data = sort(ref_data, &size_data); // FEHLER IN SORT: Informationen gehen verloren
@@ -74,7 +72,8 @@ int main (int argc, char *argv[]) {
   if (myRank == 0) {
     endTime = MPI_Wtime();
 	  timeUsed = endTime - startTime;
-    printf("time used to sort file: %s = %lf \n", filename, timeUsed);
+    printf("time used to sort file local: %s = %lf \n", filename, timeUsed);
+    startTime = MPI_Wtime(); 
   }
 
   // h ist nun sortiert.
@@ -141,15 +140,21 @@ int main (int argc, char *argv[]) {
 	  if (indexOfThisNodeInArray % 2 != 0) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
-      //printf("Prozess: %d sendet an Prozess: %d", myRank, predecessor);
+      printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
       sendHistogram(predecessor, ref_data, size_data);
+      
+      printf("Prozess: %d hat gesendet\n",myRank);
 
 			free(ref_data); // Array mit Pointern auf Histogramme
 			free(data); // Original
-
+  
+      printf("MPI_Finalize() Prozess: %d \n", myRank);
+      
       // DONE!
       MPI_Finalize();
       return EXIT_SUCCESS;
+      
+      
 	  }
     
   }
@@ -160,10 +165,10 @@ int main (int argc, char *argv[]) {
     printf("All done! \n");
   
     endTime = MPI_Wtime();
-	  timeUsed = endTime - startTime;	
+	  timeUsed = endTime - totalTime;	
 
     printf("%d elements in array!\n",size_data);
-    printf("time used = %lf \n", timeUsed);
+    printf("time used to sort everything = %lf \n", timeUsed);
   }
 
 	free(ref_data); // Array mit Pointern auf Histogramme

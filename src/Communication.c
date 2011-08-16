@@ -6,6 +6,7 @@
  * @param size Die Anzahl der Histogramme die gesendet werden sollen.
  */
 void sendHistogram(int node, Histogram **data, int size) {
+	
 	// Sende die Anzahl der Histogramme
 	MPI_Send (&size,1,MPI_INT,node,0,MPI_COMM_WORLD);
 	

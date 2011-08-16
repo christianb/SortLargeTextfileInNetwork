@@ -195,7 +195,7 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	printf("TO: %d \n", to);
 	*/
 	h = readFileFromTo(datei, from, to, h, size);
-	printf("%d Elements in HistogramArray.\n",*size);
+	//printf("%d Elements in HistogramArray.\n",*size);
   
 	fclose(datei);
 	
