@@ -36,19 +36,27 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
 	// allokiere Speicher für die Histogramme
 	//Histogram *data = calloc(*size, sizeof(Histogram));
 	// Vergrößern den alten Speicherbereich.
-	data = realloc(data, sizeof(Histogram)*(size_data+(*size_received)));
+	data = (Histogram*) realloc(data, sizeof(Histogram)*(size_data+(*size_received)));
 	
-	unsigned int i;
-	for(i = size_data; i < (size_data+(*size_received)); i++) { // Die ursprünglichen Elemente werden nicht übverschrieben. Die neuen Elemente werden am Ende angehängt.
-		// Empfange die Histogramme
-		// Empfange die Buchstaben
-		MPI_Recv (&(data[i].letter),52,MPI_UNSIGNED_CHAR,node,0,MPI_COMM_WORLD,&status);
+	if (data !=NULL) {
+
+	  unsigned int i;
+	  for(i = size_data; i < (size_data+(*size_received)); i++) { // Die ursprünglichen Elemente werden nicht übverschrieben. Die neuen Elemente werden am Ende angehängt.
+		  // Empfange die Histogramme
+		  // Empfange die Buchstaben
+		  MPI_Recv (&(data[i].letter),52,MPI_UNSIGNED_CHAR,node,0,MPI_COMM_WORLD,&status);
 		
-		// Empfange die Cursor Position
-		MPI_Recv (&(data[i].cursor),1,MPI_INT,node,0,MPI_COMM_WORLD,&status); // TODO: gibt es MPI_UNSIGNED_INT???
-	}
+		  // Empfange die Cursor Position
+		  MPI_Recv (&(data[i].cursor),1,MPI_INT,node,0,MPI_COMM_WORLD,&status); // TODO: gibt es MPI_UNSIGNED_INT???
+	  }
 	
-	return data;
+	  return data;
+	
+	} else {
+       free (data);
+       printf ("Error (re)allocating memory");
+       exit (1);
+  }
 	
 }
 

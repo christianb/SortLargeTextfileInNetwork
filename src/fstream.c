@@ -50,12 +50,18 @@ int main (int argc, char *argv[]) {
 	  startTime = MPI_Wtime(); // set start time
   }
 	
-  const char* filename = "sortMe_1000.txt";
+  const char* filename = "sortMe.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
+  if (myRank == 0) {
+    endTime = MPI_Wtime();
+	  timeUsed = endTime - startTime;
+    printf("time used to read file: %s = %lf \n", filename, timeUsed);
+  }
+  
   Histogram **ref_data = initHistogramArray(data, &size_data);
-
+  
 	// Hier haben wir nun das Histogram dieses Prozesses.
 
   if (myRank == 0) {
@@ -105,10 +111,13 @@ int main (int argc, char *argv[]) {
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
         
         // Empfange Datan, data wird entprechend erweitert
-        receiveHistogram(successor, &size_received, data, size_data); 
+        data = receiveHistogram(successor, &size_received, data, size_data); 
 
 				// Referenz auf die empfangenen Daten, für die sortierung.
-        Histogram **ref_received_data = initHistogramArray((data+size_data), &size_received);
+        Histogram **ref_received_data = initHistogramArray((data+size_data), &size_received); 
+
+        // Neuinitalisierung der lokalen referenzen falls diese ungültig geworden sind
+        ref_data = initHistogramArray(data, &size_data);
 
 				// In diesem Speicherbereich kommen die Referenzen beider 
         Histogram **sorted = (Histogram**) malloc (sizeof(Histogram*)*(size_data+size_received));
