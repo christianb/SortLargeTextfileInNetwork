@@ -2,3 +2,4 @@
 benchmark
 *.o
 sortMe_*
+out.txt
