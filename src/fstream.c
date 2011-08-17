@@ -51,7 +51,7 @@ int main (int argc, char *argv[]) {
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe.txt";
+  const char* filename = "sortMe_100.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
