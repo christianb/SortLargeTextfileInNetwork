@@ -38,6 +38,30 @@ int main (int argc, char *argv[]) {
 
 	// get number of prozesses
  	MPI_Comm_size(MPI_COMM_WORLD, &ranks);
+ 	
+ 	
+ 	
+ 	MPI_Datatype HISTOGRAM_TYPE, oldtypes[2]; 
+  int          blockcounts[2];
+  // MPI_Aint type used to be consistent with syntax of
+  // MPI_Type_extent routine 
+  MPI_Aint    offsets[2], extent;
+  
+  // Setup description of the 4 MPI_FLOAT fields x, y, z, velocity
+  offsets[0] = 0;
+  oldtypes[0] = MPI_UNSIGNED_CHAR;
+  blockcounts[0] = 52;
+
+  // Setup description of the 2 MPI_INT fields n, type 
+  // Need to first figure offset by getting size of MPI_FLOAT 
+  MPI_Type_extent(MPI_UNSIGNED_CHAR, &extent);
+  offsets[1] = 52 * extent;
+  oldtypes[1] = MPI_INT;
+  blockcounts[1] = 4;
+
+  // Now define structured type and commit it
+  MPI_Type_create_struct(1, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
+  MPI_Type_commit(&HISTOGRAM_TYPE);
 	
 	Histogram *data = NULL;
 	unsigned int size_data = 0;
@@ -110,7 +134,16 @@ int main (int argc, char *argv[]) {
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
         
         // Empfange Datan, data wird entprechend erweitert
-        data = receiveHistogram(successor, &size_received, data, size_data); 
+        data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE); 
+
+        // Vergrößere Data
+        //data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + size_received));
+        
+        // kopiere received Elemente in diesen Speicher
+        //memcpy(data+size_data, data_received, size_received * sizeof(Histogram));
+        
+        // Gebe Alten Speicher frei
+        //free(data_received);
 
 				// Referenz auf die empfangenen Daten, für die sortierung.
         Histogram **ref_received_data = initHistogramArray((data+size_data), &size_received); 
@@ -141,7 +174,7 @@ int main (int argc, char *argv[]) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
       printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
-      sendHistogram(predecessor, ref_data, size_data);
+      sendHistogram(predecessor, ref_data, size_data, &HISTOGRAM_TYPE);
       
       printf("Prozess: %d hat gesendet\n",myRank);
 
@@ -169,10 +202,13 @@ int main (int argc, char *argv[]) {
 
     printf("%d elements in array!\n",size_data);
     printf("time used to sort everything = %lf \n", timeUsed);
+    
+    free(ref_data); // Array mit Pointern auf Histogramme
+	  free(data); // Original
   }
 
-	free(ref_data); // Array mit Pointern auf Histogramme
-	free(data); // Original
+	
+  MPI_Type_free(&HISTOGRAM_TYPE);
 
 	MPI_Finalize();
 	return EXIT_SUCCESS;
