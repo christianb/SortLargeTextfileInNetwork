@@ -1,1 +1,1 @@
-/share/lehrende/forte/sortMe.txt
+/tmp/sortMe.txt
