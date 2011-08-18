@@ -42,7 +42,7 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
 	// allokiere Speicher für die Histogramme
 	//Histogram *data = calloc(*size, sizeof(Histogram));
 	// Vergrößern den alten Speicherbereich.
-	//unsigned int max_size = size_data + (*size_received);
+	unsigned int max_size = size_data + (*size_received);
 	//Histogram * data_received = malloc (sizeof(Histogram) * (*size_received) );
 	data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + *size_received));     
   

@@ -60,7 +60,7 @@ int main (int argc, char *argv[]) {
   blockcounts[1] = 4;
 
   // Now define structured type and commit it
-  MPI_Type_create_struct(1, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
+  MPI_Type_struct(0, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
   MPI_Type_commit(&HISTOGRAM_TYPE);
 	
 	Histogram *data = NULL;
@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe_100.txt";
+  const char* filename = "sortMe_100000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
