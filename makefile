@@ -6,7 +6,7 @@ CC = mpicc
 CFLAGS = -Wall -Wextra -g
 
 # Files to be compiled
-OBJECTS = $(SRC)/fstream.o \
+OBJECTS = $(SRC)/Main.o \
 $(SRC)/File_IO.o \
 $(SRC)/Terminal_IO.o \
 $(SRC)/Sort.o \
@@ -27,11 +27,11 @@ TARGET = $(BIN)/$(NAME)
 
 install: clean compile
 
-compile: fstream.o File_IO.o Terminal_IO.o Sort.o Communication.o Histogram.o
+compile: Main.o File_IO.o Terminal_IO.o Sort.o Communication.o Histogram.o
 	mkdir -p $(BIN); $(CC) $(OBJECTS) -o $(TARGET) 
 
-fstream.o: $(SRC)/fstream.c
-	$(CC) -c $(CFLAGS) $(SRC)/fstream.c -o $(SRC)/fstream.o
+Main.o: $(SRC)/Main.c
+	$(CC) -c $(CFLAGS) $(SRC)/Main.c -o $(SRC)/Main.o
 
 File_IO.o: $(SRC)/File_IO.c
 	$(CC) -c $(CFLAGS) $(SRC)/File_IO.c -o $(SRC)/File_IO.o
