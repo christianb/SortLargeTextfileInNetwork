@@ -68,14 +68,14 @@ int main (int argc, char *argv[]) {
 
   
   // time variables
-	double startTime, endTime, timeUsed, totalTime;
+	double startTime = 0, endTime = 0, timeUsed = 0, totalTime = 0;
 	
 	if (myRank == 0) {
 	  startTime = MPI_Wtime(); // set start time
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe_100000.txt";
+  const char* filename = "sortMe.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
