@@ -1,9 +1,10 @@
 #include "Histogram.h"
-
+/*
 char* getHistogramAsString(Histogram *h) {
   int n,i;
-  char *zeile = (char*) malloc (sizeof(char)*126); // Laut Aufgabe hat eine Zeile nur max. 126 Zeichen!
-
+  //char *zeile = (char*) malloc (sizeof(char)*126); // Laut Aufgabe hat eine Zeile nur max. 126 Zeichen!
+  char zeile[126];
+  
 	// init chars
 	for (i = 0; i < 126; i++) {
 		zeile[i] = 0x0;
@@ -30,4 +31,4 @@ char* getHistogramAsString(Histogram *h) {
 
   //printf("%d: %s\n", index, zeile);
 	return zeile;
-}
+}*/

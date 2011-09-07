@@ -14,6 +14,8 @@ int getSuccessorOfNode(int pNr, short int *activeNodes, short int size);
 int getPredecessorOfNode(int pNr, short int *activeNodes, short int size);
 short int* deleteOddProcessNumber(short int *activeNodes, short int *activeNodes_size);
 
+Histogram* copyElementsIntoCoherentMemory(Histogram** refData, unsigned int size);
+
 Histogram** initHistogramArray(Histogram *data, unsigned int *size) {
   // Erstelle ein Array das nur die Adressen auf die Elemente im Histogramm speichert
 	Histogram **mixed = (Histogram**) malloc (sizeof(Histogram*)*(*size));
@@ -60,7 +62,7 @@ int main (int argc, char *argv[]) {
   blockcounts[1] = 4;
 
   // Now define structured type and commit it
-  MPI_Type_struct(0, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
+  MPI_Type_struct(2, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
   MPI_Type_commit(&HISTOGRAM_TYPE);
 	
 	Histogram *data = NULL;
@@ -75,7 +77,7 @@ int main (int argc, char *argv[]) {
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe.txt";
+  const char* filename = "sortMe_100.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
@@ -92,11 +94,22 @@ int main (int argc, char *argv[]) {
 
 	// Das Histogram soll nun sortiert werden.
 	ref_data = sort(ref_data, &size_data); // FEHLER IN SORT: Informationen gehen verloren
+	
+	// kopiere die sortierten Referenzen (also die eigentlichen Inhalte) aus dem Speicherbereiche in einen neuen.
+  Histogram* coherentMemory = copyElementsIntoCoherentMemory(ref_data, size_data);
+  
+  // Gebe alte Speicherbereiche frei;
+  //free(data); free(ref_data);
+    	  
+  // Weise data nun den neuen zusammenhängenden Speicher zu.
+  data = coherentMemory; // diese Werte liegen nun sortiert im Speicher
+  ref_data = initHistogramArray(data, &size_data);  // Ref data zeigt nun auf das sortierte Feld
   
   if (myRank == 0) {
     endTime = MPI_Wtime();
 	  timeUsed = endTime - startTime;
     printf("time used to sort file local: %s = %lf \n", filename, timeUsed);
+    //printHistogramArray(ref_data, size_data);
     startTime = MPI_Wtime(); 
   }
 
@@ -134,8 +147,11 @@ int main (int argc, char *argv[]) {
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
         
         // Empfange Datan, data wird entprechend erweitert
-        data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE); 
-
+        //data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE); 
+        Histogram *received_data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE);
+        
+        
+	
         // Vergrößere Data
         //data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + size_received));
         
@@ -146,10 +162,21 @@ int main (int argc, char *argv[]) {
         //free(data_received);
 
 				// Referenz auf die empfangenen Daten, für die sortierung.
-        Histogram **ref_received_data = initHistogramArray((data+size_data), &size_received); 
+        Histogram **ref_received_data = //initHistogramArray(received_data, &size_received); 
+          malloc ((sizeof(Histogram*))*(size_received));
+
+	       unsigned int n;
+	      for (n = 0; n < (size_received); n++) { // kopiere die Adressen in das neue Array.	
+		      ref_received_data[n] = &received_data[n];
+	      }
+        
+        /* Nun habe wir in ref_data und ref_received_data die Pointer auf die eigentlichen Histogramme.
+         * Die Histogramme der eigenen und empfangenen befinden sich in einem Block im Speicher. */
 
         // Neuinitalisierung der lokalen referenzen falls diese ungültig geworden sind
-        ref_data = initHistogramArray(data, &size_data);
+        //ref_data = initHistogramArray(data, &size_data);
+        
+        //printHistogramArray(ref_received_data, size_received);
 
 				// In diesem Speicherbereich kommen die Referenzen beider 
         Histogram **sorted = (Histogram**) malloc (sizeof(Histogram*)*(size_data+size_received));
@@ -157,9 +184,19 @@ int main (int argc, char *argv[]) {
         // do merge
     	  sorted = merge(ref_data, &size_data, ref_received_data, &size_received,  sorted);
     	  
-    	  // ref_data zeigt nun auf die sortierten referenzen
-    	  ref_data = sorted;
+    	  // ref_data zeigt nun (local) auf die sortierten referenzen
+    	  //ref_data = sorted;
     	  size_data += size_received; // merke die neue anzahl der elemente
+    	  
+    	  // kopiere die sortierten Referenzen (also di eigentlichen Inhalte) aus zwei verschiedenen Speicherbereichen in einen zusammenhängenden.
+    	  Histogram* coherentMemory = copyElementsIntoCoherentMemory(sorted, size_data);
+    	  // Gebe alte Speicherbereiche frei;
+    	  free(data); free(ref_data);
+    	  free(received_data); free(ref_received_data);
+    	  
+    	  // Weise data nun den neuen zusammenhängenden Speicher zu.
+    	  data = coherentMemory; // diese Werte liegen nun sortiert im Speicher
+    	  ref_data = initHistogramArray(data, &size_data);  // Ref data zeigt nun auf das sortierte Feld
       }
       
       // in jedem fall lösche knoten, die gesendet haben aus liste
@@ -174,7 +211,10 @@ int main (int argc, char *argv[]) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
       printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
-      sendHistogram(predecessor, ref_data, size_data, &HISTOGRAM_TYPE);
+      //sendHistogram(predecessor, ref_data, size_data, &HISTOGRAM_TYPE);
+      //Histogram *data_to_send = copySortedElementsIntoMemory(ref_data, size_data);
+      _sendHistogram(predecessor, data, size_data, &HISTOGRAM_TYPE);
+      //free(data_to_send);
       
       printf("Prozess: %d hat gesendet\n",myRank);
 
@@ -196,6 +236,14 @@ int main (int argc, char *argv[]) {
   
   if (myRank == 0) {
     printf("All done! \n");
+    
+    
+    
+    // Gebe die Zeile 545146 aus!
+    //printLine(filename, ref_data, 100);
+    
+    // Schreibe in Datei
+    //writeFile("sorted.txt", filename, ref_data, size_data);
   
     endTime = MPI_Wtime();
 	  timeUsed = endTime - totalTime;	
@@ -212,6 +260,40 @@ int main (int argc, char *argv[]) {
 
 	MPI_Finalize();
 	return EXIT_SUCCESS;
+}
+
+/**
+ * Die Sortierung erfolgt nur über die Pointer.
+ * Um die Struktur jedoch an einen anderen Prozess zu senden müssen die Elemente auch korrekt im Speicher sortiert sein.
+ * Darum werden die Originalen Elemente anhand ihrer sortierten Position neu geschrieben.
+ */
+Histogram* copyElementsIntoCoherentMemory(Histogram** refData, unsigned int size) {
+   
+   unsigned int size_data_in_memory = 10;
+   Histogram *sorted_data_in_memory = (Histogram*) malloc (sizeof(Histogram) * size_data_in_memory);
+   
+   // Zu Begin haben wir speicher für 10 Histogramme angelegt
+   
+  // 1. Gehe alle Elemente durch
+  int index;
+  for (index = 0; index < size; index++) {
+    // wenn der index nicht mehr im bereich des gültigen speichers ist erweitere um weitere zehn elemente
+    if (index >= size_data_in_memory) {
+      size_data_in_memory += 10;
+      sorted_data_in_memory = realloc(sorted_data_in_memory, (size_data_in_memory * sizeof(Histogram)));
+    }
+  
+    // 1.2 Kopiere das Elemente in den neuen Speicher
+    memcpy(&sorted_data_in_memory[index], refData[index], sizeof(Histogram));
+  }
+  
+  if (index+1 < size_data_in_memory) {
+    sorted_data_in_memory = realloc(sorted_data_in_memory, (size_data_in_memory * sizeof(Histogram)));
+  }
+  
+  return sorted_data_in_memory;
+
+  
 }
 
 short int* deleteOddProcessNumber(short int *activeNodes, short int *activeNodes_size) {

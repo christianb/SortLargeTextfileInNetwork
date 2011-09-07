@@ -10,6 +10,7 @@
 
 
 void sendHistogram(int node, Histogram **data, int size, MPI_Datatype *HISTOGRAM_TYPE); // Sende Histogram an Prozess.
+void _sendHistogram(int node, Histogram *data, int size, MPI_Datatype *HISTOGRAM_TYPE);
 Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *master, unsigned int size_master, MPI_Datatype *HISTOGRAM_TYPE); // Empfange Histogram von Prozess
 
 #endif /* COMMUNICATION_H */

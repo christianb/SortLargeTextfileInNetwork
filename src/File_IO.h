@@ -7,6 +7,8 @@
 #include "Histogram.h"
 
 Histogram* readFile(const char *filename, const int myRank, const int numRank, Histogram *h, unsigned int *size);
-//int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size);
+int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size);
+
+void printLine(const char *filename, Histogram **, int line_number);
 
 #endif /* FILE_H */

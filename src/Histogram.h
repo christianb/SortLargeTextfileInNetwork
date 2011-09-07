@@ -11,6 +11,6 @@ typedef struct {
 
 typedef enum { FALSE = 0, TRUE = 1 } bool;
 
-char* getHistogramAsString(Histogram *h);
+//char* getHistogramAsString(Histogram *h);
 
 #endif /* HISTOGRAM_H */

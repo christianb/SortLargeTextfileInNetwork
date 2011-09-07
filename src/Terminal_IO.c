@@ -32,9 +32,38 @@ void printHistogramStruct(Histogram **h, int index) {
 void printHistogramArray(Histogram **h, int size) {
   //printf("call HistogramArray(), size = %d\n", size);
 	int index;
-	char *zeile;
+	//char *zeile;
 	for (index = 0; index < size; index++) {
-		zeile = getHistogramAsString(h[index]);
-		printf("%d: %s\n", index, zeile);
+	  printf("%d", index+1);
+	  printHistogramElement(h[index]);
+	  printf("\n");
+		//zeile = getHistogramAsString(h[index]);
+		//if (index <= 255) {
+		  //printf("%d: %s\n", index, zeile);
+		  //free(zeile);
+		//}
 	}
+}
+
+/** Schreibt alle Buchstaben in korrekter Reihenfolge von einem Histogram Element. */
+void printHistogramElement(Histogram *h) {
+  int n, i;
+  char l;
+  
+  for (n = 0; n < 26; n++) {
+    // Schreibe Großbuchstaben
+    l = (char) n+65;
+    for (i = 0; i < (*h).letter[n]; i++) {
+      printf("%c",l);
+    }
+    
+    // Schreibe kleinbuchstaben
+    l = (char) n+97;
+    for (i = 0; i < (*h).letter[n+26]; i++) {
+      printf("%c",l);
+    }
+  
+  }
+  
+  printf(" at cursor: %d",(*h).cursor);
 }

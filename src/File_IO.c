@@ -201,7 +201,32 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	
 	return h;
 }
-/*
+
+/** Ausgabe der Zeile 545146
+ */
+ void printLine(const char *filename_in, Histogram **h, int line_number) {
+  FILE *in = fopen(filename_in, "r");
+  
+  if (NULL == in) {
+    printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
+		//return EXIT_FAILURE;
+	}
+	
+	//char* zeile;
+	char original_word[126];
+
+  // hole den cursor für die sortierte Zeile an position 545146.
+  unsigned int cursor = (*h[line_number-1]).cursor;
+  
+  // gehe in File in zu der Cursor position
+	fseek(in, cursor, SEEK_SET);
+	// lese zeichen bis Zeilenende
+	fgets(original_word, 126, in);
+	
+	printf("%d: %s", line_number, original_word);
+ }
+
+
 int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
 	FILE *out;
 	FILE *in;
@@ -253,4 +278,4 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	fclose(in);
 
 	return 0;
-}*/
+}
