@@ -9,6 +9,8 @@
 #include "Sort.h"
 #include "Communication.h"
 
+#define SORT_FILE "sortMe_100.txt"
+
 int getIndexOfNode(int node, short int *activeNodes, short int size);
 int getSuccessorOfNode(int pNr, short int *activeNodes, short int size);
 int getPredecessorOfNode(int pNr, short int *activeNodes, short int size);
@@ -29,94 +31,73 @@ Histogram** initHistogramArray(Histogram *data, unsigned int *size) {
 }
 
 int main (int argc, char *argv[]) {
+  // 1) MPI initialisieren
 	int myRank;
  	int ranks;
-
-	// init mpi
 	MPI_Init(&argc, &argv);
-
-	// get rank of this prozess
-	MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-
-	// get number of prozesses
- 	MPI_Comm_size(MPI_COMM_WORLD, &ranks);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myRank); // get rank of this prozess
+ 	MPI_Comm_size(MPI_COMM_WORLD, &ranks); // get number of prozesses
  	
- 	
- 	
+ 	// 2) Datentyp Histogram MPI bekannt machen.
  	MPI_Datatype HISTOGRAM_TYPE, oldtypes[2]; 
-  int          blockcounts[2];
+  int blockcounts[2];
   // MPI_Aint type used to be consistent with syntax of
   // MPI_Type_extent routine 
   MPI_Aint    offsets[2], extent;
-  
   // Setup description of the 4 MPI_FLOAT fields x, y, z, velocity
   offsets[0] = 0;
   oldtypes[0] = MPI_UNSIGNED_CHAR;
   blockcounts[0] = 52;
-
   // Setup description of the 2 MPI_INT fields n, type 
   // Need to first figure offset by getting size of MPI_FLOAT 
   MPI_Type_extent(MPI_UNSIGNED_CHAR, &extent);
   offsets[1] = 52 * extent;
   oldtypes[1] = MPI_INT;
   blockcounts[1] = 4;
-
   // Now define structured type and commit it
   MPI_Type_struct(2, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
   MPI_Type_commit(&HISTOGRAM_TYPE);
 	
-	Histogram *data = NULL;
-	unsigned int size_data = 0;
-
-  
-  // time variables
-	double startTime = 0, endTime = 0, timeUsed = 0, totalTime = 0;
+	// 3) Deklaration lokaler Variablen
+	Histogram *unsortedLocalData = NULL; // Pointer auf die Histogramme im Speicher
+	unsigned int sizeLocalData = 0; // Anzahl der Histogramme im Speicher
+	double startTime = 0, endTime = 0, timeUsed = 0, totalTime = 0;	// time variables
+	//const char* filename = "sortMe_100.txt"; // Zu sortierende Datei
+	Histogram *sortedLocalData = NULL;
 	
 	if (myRank == 0) {
 	  startTime = MPI_Wtime(); // set start time
 	  totalTime = startTime;
   }
-	
-  const char* filename = "sortMe_100.txt";
-	// Lese Datei und bekomme das die Histogramme zurück.
-	data = readFile(filename, myRank, ranks, data, &size_data);
+
+	// 4) Lese Datei + Erstelle Histogram
+	unsortedLocalData = readFile(SORT_FILE, myRank, ranks, unsortedLocalData, &sizeLocalData); // size_local_data enthält nun die Anzahl der Histogramme
 
   if (myRank == 0) {
     endTime = MPI_Wtime();
 	  timeUsed = endTime - startTime;
-    printf("time used to read file: %s = %lf \n", filename, timeUsed);
+    printf("time used to read file: %s = %lf \n", SORT_FILE, timeUsed);
     startTime = MPI_Wtime();
   }
-  
-  Histogram **ref_data = initHistogramArray(data, &size_data);
-  
-	// Hier haben wir nun das Histogram dieses Prozesses.
 
-	// Das Histogram soll nun sortiert werden.
-	ref_data = sort(ref_data, &size_data); // FEHLER IN SORT: Informationen gehen verloren
+	// 5) Sortiere lokale Daten
+	Histogram **ref_unsortedLocalData = initHistogramArray(unsortedLocalData, &sizeLocalData); // erzeuge eine Referenz auf alle Histogramme die noch unsortiert sind
+	Histogram **ref_sortedLocalData = sort(ref_unsortedLocalData, &sizeLocalData); // sortiere die Referenzen auf die Daten
+	sortedLocalData = copyElementsIntoCoherentMemory(ref_sortedLocalData, sizeLocalData); // kopiere Elemente hinter den Referenzen in neuen Speicher
 	
-	// kopiere die sortierten Referenzen (also die eigentlichen Inhalte) aus dem Speicherbereiche in einen neuen.
-  Histogram* coherentMemory = copyElementsIntoCoherentMemory(ref_data, size_data);
-  
-  // Gebe alte Speicherbereiche frei;
-  //free(data); free(ref_data);
-    	  
-  // Weise data nun den neuen zusammenhängenden Speicher zu.
-  data = coherentMemory; // diese Werte liegen nun sortiert im Speicher
-  ref_data = initHistogramArray(data, &size_data);  // Ref data zeigt nun auf das sortierte Feld
-  
+	//free(ref_unsortedLocalData); // ref data auf alten unsortierten Speicher freigeben
+	free(ref_sortedLocalData); // Speicher auf die Referenzen der sortierten Daten freigeben
+	free(unsortedLocalData); // Speicher auf unsortierte Daten freigeben
+	
+	// nun steht in sortetLocalData die Sortierten Histogramme
+
   if (myRank == 0) {
     endTime = MPI_Wtime();
 	  timeUsed = endTime - startTime;
-    printf("time used to sort file local: %s = %lf \n", filename, timeUsed);
+    printf("time used to sort file local: %s = %lf \n", SORT_FILE, timeUsed);
     //printHistogramArray(ref_data, size_data);
     startTime = MPI_Wtime(); 
   }
-
-  // h ist nun sortiert.
-  // also sollte der inhalt von h mal asugegeben werden
-  //printHistogramArray(mixed, size);
-	//writeFile("out.txt",filename, mixed, &size);
 
   /* Hier beginnt der MPI Spaß */
   // Jeder Knoten hat seine Elemente die er aus dem File gelesen hat sortiert und kann diese nun an andere Knoten senden.
@@ -145,58 +126,36 @@ int main (int argc, char *argv[]) {
       if (successor != -1) { // wenn es einen nachfolger gibt empfange und merge
         printf("Prozess: %d empfaengt von Prozess: %d \n", myRank, successor);
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
-        
-        // Empfange Datan, data wird entprechend erweitert
-        //data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE); 
-        Histogram *received_data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE);
-        
-        
-	
-        // Vergrößere Data
-        //data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + size_received));
-        
-        // kopiere received Elemente in diesen Speicher
-        //memcpy(data+size_data, data_received, size_received * sizeof(Histogram));
-        
-        // Gebe Alten Speicher frei
-        //free(data_received);
 
-				// Referenz auf die empfangenen Daten, für die sortierung.
-        Histogram **ref_received_data = //initHistogramArray(received_data, &size_received); 
-          malloc ((sizeof(Histogram*))*(size_received));
+        Histogram *local_and_received_data = receiveHistogram(successor, &size_received, &HISTOGRAM_TYPE, sortedLocalData, sizeLocalData);
+        // beide sortierte Daten stehen in einem zusammenhängenden Speicherbereich.
+        // Da die Anzahl der jeweiligen Histogramme bekannt ist, kann sicher darin navigiert werden.
 
-	       unsigned int n;
-	      for (n = 0; n < (size_received); n++) { // kopiere die Adressen in das neue Array.	
-		      ref_received_data[n] = &received_data[n];
-	      }
+				// Nun brauchen wir je ein Array mit den Referenzen auf die empfangenen Daten.
+        Histogram **ref_received_sortedData = initHistogramArray(local_and_received_data+sizeLocalData, &size_received); // Der Pointer wird also hinter das letzte Element aus den lokalen Daten, also auf das erste Element der Empfangenen Daten gesetzt.
         
-        /* Nun habe wir in ref_data und ref_received_data die Pointer auf die eigentlichen Histogramme.
-         * Die Histogramme der eigenen und empfangenen befinden sich in einem Block im Speicher. */
-
-        // Neuinitalisierung der lokalen referenzen falls diese ungültig geworden sind
-        //ref_data = initHistogramArray(data, &size_data);
+        // Nun brauchen wir noch ein Array mit den Referenzen auf die lokalen Daten.
+        Histogram **ref_local_sortedData = initHistogramArray(local_and_received_data, &sizeLocalData);
         
-        //printHistogramArray(ref_received_data, size_received);
-
 				// In diesem Speicherbereich kommen die Referenzen beider 
-        Histogram **sorted = (Histogram**) malloc (sizeof(Histogram*)*(size_data+size_received));
+        Histogram **sorted_references = (Histogram**) malloc (sizeof(Histogram*)*(sizeLocalData+size_received));
 
         // do merge
-    	  sorted = merge(ref_data, &size_data, ref_received_data, &size_received,  sorted);
+    	  sorted_references = merge(ref_local_sortedData, &sizeLocalData, ref_received_sortedData, &size_received, sorted_references);
     	  
-    	  // ref_data zeigt nun (local) auf die sortierten referenzen
-    	  //ref_data = sorted;
-    	  size_data += size_received; // merke die neue anzahl der elemente
+    	  sizeLocalData += size_received; // merke die neue anzahl der elemente
     	  
-    	  // kopiere die sortierten Referenzen (also di eigentlichen Inhalte) aus zwei verschiedenen Speicherbereichen in einen zusammenhängenden.
-    	  Histogram* coherentMemory = copyElementsIntoCoherentMemory(sorted, size_data);
+    	  // kopiere die sortierten Referenzen (also die eigentlichen Inhalte) aus zwei verschiedenen Speicherbereichen in einen zusammenhängenden.
+    	  Histogram* sortedData = copyElementsIntoCoherentMemory(sorted_references, sizeLocalData);
+    	  
+    	  
     	  // Gebe alte Speicherbereiche frei;
-    	  free(data); free(ref_data);
-    	  free(received_data); free(ref_received_data);
+    	  free(local_and_received_data); 
+    	  free(ref_received_sortedData);
+    	  free(ref_local_sortedData); 
+    	  free(sorted_references);
     	  
-    	  // Weise data nun den neuen zusammenhängenden Speicher zu.
-    	  data = coherentMemory; // diese Werte liegen nun sortiert im Speicher
-    	  ref_data = initHistogramArray(data, &size_data);  // Ref data zeigt nun auf das sortierte Feld
+    	  sortedLocalData = sortedData; // referenz auf alle Sortierten Daten wird aktualisiert.
       }
       
       // in jedem fall lösche knoten, die gesendet haben aus liste
@@ -211,15 +170,11 @@ int main (int argc, char *argv[]) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
       printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
-      //sendHistogram(predecessor, ref_data, size_data, &HISTOGRAM_TYPE);
-      //Histogram *data_to_send = copySortedElementsIntoMemory(ref_data, size_data);
-      _sendHistogram(predecessor, data, size_data, &HISTOGRAM_TYPE);
-      //free(data_to_send);
+      _sendHistogram(predecessor, sortedLocalData, sizeLocalData, &HISTOGRAM_TYPE);
       
       printf("Prozess: %d hat gesendet\n",myRank);
 
-			free(ref_data); // Array mit Pointern auf Histogramme
-			free(data); // Original
+			free(sortedLocalData);
   
       printf("MPI_Finalize() Prozess: %d \n", myRank);
       
@@ -248,11 +203,10 @@ int main (int argc, char *argv[]) {
     endTime = MPI_Wtime();
 	  timeUsed = endTime - totalTime;	
 
-    printf("%d elements in array!\n",size_data);
+    printf("%d elements in array!\n",sizeLocalData);
     printf("time used to sort everything = %lf \n", timeUsed);
     
-    free(ref_data); // Array mit Pointern auf Histogramme
-	  free(data); // Original
+    //free(sortedLocalData); // Gebe Histogramme frei
   }
 
 	
@@ -269,29 +223,19 @@ int main (int argc, char *argv[]) {
  */
 Histogram* copyElementsIntoCoherentMemory(Histogram** refData, unsigned int size) {
    
-   unsigned int size_data_in_memory = 10;
-   Histogram *sorted_data_in_memory = (Histogram*) malloc (sizeof(Histogram) * size_data_in_memory);
+   //unsigned int size_data_in_memory = 10;
+   Histogram *sortedData = (Histogram*) malloc (sizeof(Histogram) * size);
    
    // Zu Begin haben wir speicher für 10 Histogramme angelegt
    
   // 1. Gehe alle Elemente durch
-  int index;
+  int index = 0;
   for (index = 0; index < size; index++) {
-    // wenn der index nicht mehr im bereich des gültigen speichers ist erweitere um weitere zehn elemente
-    if (index >= size_data_in_memory) {
-      size_data_in_memory += 10;
-      sorted_data_in_memory = realloc(sorted_data_in_memory, (size_data_in_memory * sizeof(Histogram)));
-    }
-  
     // 1.2 Kopiere das Elemente in den neuen Speicher
-    memcpy(&sorted_data_in_memory[index], refData[index], sizeof(Histogram));
+    memcpy(sortedData+index, refData[index], sizeof(Histogram));
   }
   
-  if (index+1 < size_data_in_memory) {
-    sorted_data_in_memory = realloc(sorted_data_in_memory, (size_data_in_memory * sizeof(Histogram)));
-  }
-  
-  return sorted_data_in_memory;
+  return sortedData;
 
   
 }

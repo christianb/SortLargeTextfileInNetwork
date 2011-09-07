@@ -74,15 +74,16 @@ void _sendHistogram(int node, Histogram *data, int size, MPI_Datatype *HISTOGRAM
 
 /**
  * Empfängt die Histogramme von einem anderen Prozess.
+ * Vergrößert den Speicher in dem die lokalen Daten sortiert vorliegen, so das die empfangenen Daten dort hinein passen.
  * @param node Der Prozess von dem die Histogramme empfangen werden.
  * @param size Referenz auf die Anzahl der Elemente.
  */
-Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *data, unsigned int size_data, MPI_Datatype *HISTOGRAM_TYPE) {
+Histogram* receiveHistogram(int node, unsigned int *size_receivedData, MPI_Datatype *HISTOGRAM_TYPE, Histogram *sortedLocalData, unsigned int size_sortedLocalData) {
 	MPI_Status status;
 
 	// Empfange die Anzahl der Histogramme
 	//*size_received = 0;
-	MPI_Recv (size_received,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+	MPI_Recv (size_receivedData,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
 	
 	// allokiere Speicher für die Histogramme
 	//Histogram *data = calloc(*size, sizeof(Histogram));
@@ -91,7 +92,9 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
 	//Histogram * data_received = malloc (sizeof(Histogram) * (*size_received) );
 	//data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + *size_received));     
 
-  Histogram *received_data = (Histogram*) malloc (sizeof(Histogram) * (*size_received));
+  //Histogram *received_data = (Histogram*) malloc (sizeof(Histogram) * (*size_received));
+  sortedLocalData = (Histogram*) realloc (sortedLocalData, sizeof(Histogram)* (size_sortedLocalData + (*size_receivedData)));
+  
 	/*
 	if (data !=NULL) {
 
@@ -116,13 +119,13 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
   //Histogram     h[NELEM], h_received[NELEM];
   
   //Histogram *_data = data;
-  //MPI_Recv(data+size_data, *size_received, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
-  MPI_Recv(received_data,*size_received, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
+  MPI_Recv(sortedLocalData+size_sortedLocalData, *size_receivedData, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
+  //MPI_Recv(received_data,*size_received, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
  
  unsigned int i;
-  for (i = 0; i < (*size_received) ; i++) {
+  for (i = 0; i < (*size_receivedData + size_sortedLocalData) ; i++) {
     printf("%d",i+1);
-    printHistogramElement(&received_data[i]);
+    printHistogramElement(&sortedLocalData[i]);
     printf("\n");
   }
  
@@ -140,7 +143,7 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
   //free(data_received);
   //MPI_Type_free(&HISTOGRAM_TYPE);
   
-  return received_data;
+  return sortedLocalData;
 	
 }
 
