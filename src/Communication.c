@@ -1,5 +1,17 @@
 #include "Communication.h"
 
+Histogram* referenzToRealData(Histogram** data, int size) {
+  Histogram *new_memory = (Histogram*) malloc (size * sizeof(Histogram));
+  int i;
+  for (i = 0; i < size; i++) {
+    //memcpy(new_memory, *data, sizeof(Histogram)*size);
+    new_memory[i].cursor = (*data[i]).cursor;
+  }
+  
+ 
+  return new_memory;
+}
+
 /** Sende die Histogramme an einen anderen Prozess.
  * @param node Prozess an den die Histogramme gesendet werden sollen.
  * @param data Ein Pointer auf die Histogramme die gesendet werden sollen.
@@ -7,6 +19,17 @@
  */
 void sendHistogram(int node, Histogram **data, int size, MPI_Datatype *HISTOGRAM_TYPE) {
 	
+	// kopiere die Inhalte hinter den referenzen in einen neuen Speicherbereich.
+	Histogram *new_memory = referenzToRealData(data, size);
+	
+	/*
+	int k;
+    for (k = 0; k < size; k++) {
+      printf("%d: cursor->%d\n", k, new_memory[k].cursor);
+    }
+    */
+	
+	//Histogram *new_memory = data[0];
 	// Sende die Anzahl der Histogramme
 	MPI_Send (&size,1,MPI_INT,node,0,MPI_COMM_WORLD);
 	
@@ -21,7 +44,8 @@ void sendHistogram(int node, Histogram **data, int size, MPI_Datatype *HISTOGRAM
 		MPI_Send(&((*data[i]).cursor), 1,MPI_INT,node,0,MPI_COMM_WORLD);
 	}*/
   
-  MPI_Send(*data, size, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD);
+  MPI_Send(new_memory, size, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD);
+  free(new_memory);
   
   //MPI_Type_free(&HISTOGRAM_TYPE);
   
@@ -71,6 +95,13 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
   
   //Histogram *_data = data;
   MPI_Recv(data+size_data, *size_received, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
+  /*
+  Histogram *ref_data = data+size_data;
+  int k;
+    for (k = 0; k < (*size_received); k++) {
+      printf("%d: cursor->%d\n", k, ref_data[k].cursor);
+    }
+  */
   /*
   data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + *size_received));     
         

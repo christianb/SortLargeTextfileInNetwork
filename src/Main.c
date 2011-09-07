@@ -57,10 +57,10 @@ int main (int argc, char *argv[]) {
   MPI_Type_extent(MPI_UNSIGNED_CHAR, &extent);
   offsets[1] = 52 * extent;
   oldtypes[1] = MPI_INT;
-  blockcounts[1] = 4;
+  blockcounts[1] = 1;
 
   // Now define structured type and commit it
-  MPI_Type_struct(0, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
+  MPI_Type_struct(2, blockcounts, offsets, oldtypes, &HISTOGRAM_TYPE);
   MPI_Type_commit(&HISTOGRAM_TYPE);
 	
 	Histogram *data = NULL;
@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe.txt";
+  const char* filename = "sortMe_100.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
@@ -202,9 +202,14 @@ int main (int argc, char *argv[]) {
 
     printf("%d elements in array!\n",size_data);
     printf("time used to sort everything = %lf \n", timeUsed);
+     
+    int k;
+    for (k = 0; k < size_data; k++) {
+      printf("%d: cursor->%d\n", k, (*ref_data[k]).cursor);
+    }
     
     free(ref_data); // Array mit Pointern auf Histogramme
-	  free(data); // Original
+	  //free(data); // Original
   }
 
 	
