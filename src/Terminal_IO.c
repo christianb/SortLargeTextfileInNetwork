@@ -38,3 +38,12 @@ void printHistogramArray(Histogram **h, int size) {
 		printf("%d: %s\n", index, zeile);
 	}
 }
+
+void _printHistogramArray(Histogram *data, int size) {
+	int index;
+	char *zeile;
+	for (index = 0; index < size; index++) {
+		zeile = getHistogramAsString(data+index);
+		printf("%d: %s\n", index, zeile);
+	}
+}

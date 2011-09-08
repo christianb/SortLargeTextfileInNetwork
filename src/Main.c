@@ -15,15 +15,15 @@ int getPredecessorOfNode(int pNr, short int *activeNodes, short int size);
 short int* deleteOddProcessNumber(short int *activeNodes, short int *activeNodes_size);
 
 Histogram** initHistogramArray(Histogram *data, unsigned int *size) {
-  // Erstelle ein Array das nur die Adressen auf die Elemente im Histogramm speichert
-	Histogram **mixed = (Histogram**) malloc (sizeof(Histogram*)*(*size));
+  // Erstelle ein Array mit Referenzen (Pointern) auf die Daten
+	Histogram **ref_data = (Histogram**) malloc (sizeof(Histogram*)*(*size));
 
 	unsigned int n;
 	for (n = 0; n < (*size); n++) { // kopiere die Adressen in das neue Array.	
-		mixed[n] = &data[n];
+		ref_data[n] = &data[n];
 	}
 	
-	return mixed;
+	return ref_data;
 }
 
 int main (int argc, char *argv[]) {
@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe_100.txt";
+  const char* filename = "sortMe_1000000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
@@ -133,9 +133,12 @@ int main (int argc, char *argv[]) {
         printf("Prozess: %d empfaengt von Prozess: %d \n", myRank, successor);
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
         
+        //_printHistogramArray(data, size_data); // Zeigt Daten im Speicher (unsortiert): OK
+        //printHistogramArray(ref_data, size_data); // lokale daten vor empfang (soritert): OK!
         // Empfange Datan, data wird entprechend erweitert
-        data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE); 
-
+        data = receiveHistogram(successor, &size_received, data, size_data, &HISTOGRAM_TYPE, ref_data); 
+        //_printHistogramArray(data, size_data); // Zeigt Daten im Speicher (sortiert): OK !
+        //printHistogramArray(ref_data, size_data); // lokale daten nach empfang: OK!
         // Vergrößere Data
         //data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + size_received));
         
@@ -147,19 +150,24 @@ int main (int argc, char *argv[]) {
 
 				// Referenz auf die empfangenen Daten, für die sortierung.
         Histogram **ref_received_data = initHistogramArray((data+size_data), &size_received); 
+        //printHistogramArray(ref_received_data, size_received); // Referenz auf empfangene Daten: OK!
 
-        // Neuinitalisierung der lokalen referenzen falls diese ungültig geworden sind
+        // Neuinitalisierung der lokalen referenzen falls diese ungültig geworden sind SCHLECHTE IDEE, da somit die referenzen auf die ursprünglich unsortierten DAten zeigen und nicht auf die bereits sortierten
         ref_data = initHistogramArray(data, &size_data);
+        //printHistogramArray(ref_data, size_data);  // Referenzen auf die localen Daten: OK!
 
 				// In diesem Speicherbereich kommen die Referenzen beider 
         Histogram **sorted = (Histogram**) malloc (sizeof(Histogram*)*(size_data+size_received));
 
         // do merge
     	  sorted = merge(ref_data, &size_data, ref_received_data, &size_received,  sorted);
+    	  //printHistogramArray(sorted, size_data+size_received); // Referenzen auf sortierte daten Lokal + Received: WIEDER OK! ABER NICHT mit 10000 Zeilen!
     	  
     	  // ref_data zeigt nun auf die sortierten referenzen
     	  ref_data = sorted;
     	  size_data += size_received; // merke die neue anzahl der elemente
+    	  
+    	  //printHistogramArray(ref_data, size_data);
       }
       
       // in jedem fall lösche knoten, die gesendet haben aus liste
@@ -174,6 +182,7 @@ int main (int argc, char *argv[]) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
       printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
+      //printHistogramArray(ref_data, size_data);
       sendHistogram(predecessor, ref_data, size_data, &HISTOGRAM_TYPE);
       
       printf("Prozess: %d hat gesendet\n",myRank);
@@ -203,10 +212,12 @@ int main (int argc, char *argv[]) {
     printf("%d elements in array!\n",size_data);
     printf("time used to sort everything = %lf \n", timeUsed);
      
-    int k;
+    /*unsigned int k;
     for (k = 0; k < size_data; k++) {
       printf("%d: cursor->%d\n", k, (*ref_data[k]).cursor);
-    }
+    }*/
+    
+    //printHistogramArray(ref_data, size_data);
     
     free(ref_data); // Array mit Pointern auf Histogramme
 	  //free(data); // Original

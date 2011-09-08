@@ -3,7 +3,7 @@
 
 # Define C Compiler
 CC = mpicc
-CFLAGS = -Wall -Wextra -mpe=mpilog -O0
+CFLAGS = -Wall -Wextra -mpe=mpilog -O0 -g
 
 # Files to be compiled
 OBJECTS = $(SRC)/Main.o \
