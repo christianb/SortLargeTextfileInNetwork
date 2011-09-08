@@ -12,6 +12,7 @@ void addCharToHistogram(Histogram *h, unsigned int index, char c);
 void addCursorToHistogram(Histogram *h, unsigned int index, unsigned int cursor);
 
 Histogram* readFileFromTo(FILE *datei, const unsigned int from, const unsigned int to, Histogram *h, unsigned int *size);
+size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes);
 
 /**
  * Fügt ein Charakter dem Histogram an einer Position hinzu.
@@ -49,7 +50,7 @@ void addCursorToHistogram(Histogram *h, unsigned int index, unsigned int cursor)
 void init(Histogram* h, unsigned int index) {
 	h[index].cursor = -1;
 	short i;
-	for (i = 0; i < 52; i++) {
+	for (i = 0; i < 53; i++) {
 		h[index].letter[i] = 0;	
 	}
 }
@@ -213,7 +214,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	//FILE *in;
 
   // Bitte Pfad und Dateinamen anpassen
-	out = fopen(filename_out, "wb");
+	out = fopen(filename_out, "wt");
 	//in = fopen(filename_in, "r");
 
    if(NULL == out) {
@@ -237,7 +238,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
    /* Bitte Pfad und Dateinamen anpassen */
    datei = fopen(filename_in, "r");
    
-  void* file_memory; 
+  char* file_memory; 
   int fd;
   
   fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
@@ -249,29 +250,36 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	fd = open (filename_in, O_RDWR, S_IRUSR | S_IWUSR); 
   
   file_memory = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
-  close (fd);
+  //madvise(file_memory, length, MADV_SEQUENTIAL);
   
   //char *zeile = (char*) malloc (sizeof(char)*126);
-  char zeile[126];
+  char zeile[127];
   //int integer;
   //sscanf (file_memory+4, "%d", &integer); 
   //printf ("value: %d\n", integer); 
   //sscanf (file_memory+4, "%s", &zeile);
   //printf ("value: %s\n", zeile); 
   
-  //
 	
   //char *c = (char*) malloc (sizeof(char));
   int sumLetters = 0;
+  unsigned int cursor;
+  char c = '\n';
+  size_t num = 0;
 	for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
-		unsigned int cursor = (*h[i]).cursor;
+		cursor = (*h[i]).cursor;
 		
 		//sscanf (file_memory+cursor, "%s", zeile);
     //printf ("value: %s\n", zeile); 
 
+    //fgets (&zeile, 100, file_memory+cursor);
     //sscanf(file_memory+cursor, "%[^\n]", &zeile);
-		sumLetters = sumAllLetters(i, h);
+    num = readMemory(file_memory+cursor, &zeile, 127);
+		/*sumLetters = sumAllLetters(i, h);
+		if (sumLetters == 0) {
+		  printf("zero");
+		}*/
 		
 		
 		
@@ -282,10 +290,12 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	
 		// schreibe OriginalZeile		
 		//result = fputs(zeile, out);
-		char buffer[3] = { 'x' , 'y' , 'z' };
-		//fwrite ( buffer, 1, 10, out);
-		fwrite (file_memory+cursor , 1 , sumLetters , out );
-		fputc('\n', out);
+		//char buffer[3] = { 'x' , 'y' , 'z' };
+		//fwrite ( zeile, 1, num, out);
+		fwrite (file_memory+cursor, 1 , num , out ); // was ist mit den leer
+		//memcpy(out, file_memory+cursor, sizeof(char)*sumLetters);
+		//putc('\n', out);
+		fwrite (&c, 1, 1, out);
 		//fputc(':', out);
 		//fputc(' ', out);
 
@@ -298,6 +308,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 		//fputc('\n', out);
 	}
   //fputc(EOF, out);
+  close (fd);
 	fclose(out);		
 	//fclose(in);
 	//free(zeile);
@@ -371,8 +382,9 @@ void mmapTry(const char* filename) {
    // Bitte Pfad und Dateinamen anpassen
    datei = fopen(filename, "r");
    
-  char* file_memory; 
-  int fd;
+  void* file_in; 
+  void* file_out;
+  int fd, fo;
   
   fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
 	//printf("Ende in Datei: %d \n",ftell(datei));
@@ -381,16 +393,20 @@ void mmapTry(const char* filename) {
 	fclose(datei);
 	
 	fd = open (filename, O_RDWR, S_IRUSR | S_IWUSR); 
+	fo = open ("out.txt", O_RDWR, S_IRUSR | S_IWUSR); 
   
-  file_memory = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+  file_in = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+  file_out = mmap (0, length, PROT_READ, MAP_SHARED, fo, 0); 
+  
   close (fd);
+  close (fo);
   
   char *zeile = (char*) malloc (sizeof(char)*126); 
   int integer;
   //sscanf (file_memory+4, "%d", &integer); 
   //printf ("value: %d\n", integer); 
   //sscanf (file_memory+0, "%s", zeile);
-  sscanf(file_memory+9, "%[^\n]", zeile);
+  sscanf(file_in, "%[^\n]", zeile);
   printf ("value: %s\n", zeile); 
   /*
   char *c = (char*) malloc (sizeof(char));
@@ -407,7 +423,7 @@ void mmapTry(const char* filename) {
   
   //printf("\n%c\n",file_memory[1]);
   
-  munmap (file_memory, length);
+  munmap (file_in, length);
 }
 
 int sumAllLetters(unsigned int index, Histogram **h) {
@@ -421,4 +437,17 @@ int sumAllLetters(unsigned int index, Histogram **h) {
   }
   
   return total_sum;
+}
+
+size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes) {
+   size_t bytesRead = 0;
+
+   while (bytesRead < maxBytes - 1 && ptrStart[bytesRead] != '\n') {
+       //buffer[bytesRead] = ptrStart[bytesRead];
+       bytesRead++;
+   }
+   //buffer[bytesRead] = '\n';
+   //buffer[bytesRead + 1] = '\0';
+
+   return bytesRead;
 }
