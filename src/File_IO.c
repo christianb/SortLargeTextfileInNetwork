@@ -1,4 +1,10 @@
 #include "File_IO.h"
+#include <stdlib.h> 
+#include <stdio.h> 
+#include <fcntl.h> 
+#include <sys/mman.h> 
+#include <sys/stat.h> 
+#include <unistd.h> 
 
 #define RAISE 100;
 
@@ -201,42 +207,81 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	
 	return h;
 }
-/*
+
 int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
 	FILE *out;
-	FILE *in;
+	//FILE *in;
 
   // Bitte Pfad und Dateinamen anpassen
 	out = fopen(filename_out, "w+t");
-	in = fopen(filename_in, "r");
+	//in = fopen(filename_in, "r");
 
    if(NULL == out) {
       printf("Konnte Datei %s nicht öffnen!\n", filename_out);
       return EXIT_FAILURE;
    }
-
+/*
 	if (NULL == in) {
 		printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
 		return EXIT_FAILURE;
 	}
-
+*/
 	//char* zeile;
-	char original_word[126];
+	//char original_word[126];
 
 	unsigned int i;
 	//unsigned short n;
 	int result;
-
+	
+	FILE *datei;
+   /* Bitte Pfad und Dateinamen anpassen */
+   datei = fopen(filename_in, "r");
+   
+  char* file_memory; 
+  int fd;
+  
+  fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
+	//printf("Ende in Datei: %d \n",ftell(datei));
+	
+	unsigned int length = ftell(datei);
+	fclose(datei);
+	
+	fd = open (filename_in, O_RDWR, S_IRUSR | S_IWUSR); 
+  
+  file_memory = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+  close (fd);
+  
+  char *zeile = (char*) malloc (sizeof(char)*126);
+  //int integer;
+  //sscanf (file_memory+4, "%d", &integer); 
+  //printf ("value: %d\n", integer); 
+  //sscanf (file_memory+4, "%s", &zeile);
+  //printf ("value: %s\n", zeile); 
+  
+  //
+	
+  //char *c = (char*) malloc (sizeof(char));
+  
 	for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
 		unsigned int cursor = (*h[i]).cursor;
+		
+		//sscanf (file_memory+cursor, "%s", zeile);
+    //printf ("value: %s\n", zeile); 
+
+    sscanf(file_memory+cursor, "%[^\n]", zeile);
+		
+		
+		
+		
 		// gehe in File in zu der Cursor position
-		fseek(in, cursor, SEEK_SET);
+		//fseek(in, cursor, SEEK_SET);
 		// lese zeichen bis Zeilenende
-		fgets(original_word, 126, in);
+		//fgets(original_word, 126, in);
 	
 		// schreibe OriginalZeile		
-		result = fputs(original_word, out);
+		result = fputs(zeile, out);
+		fputc('\n', out);
 		//fputc(':', out);
 		//fputc(' ', out);
 
@@ -250,7 +295,113 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	}
 
 	fclose(out);		
-	fclose(in);
+	//fclose(in);
+	free(zeile);
+	
+	munmap (file_memory, length);
 
 	return 0;
-}*/
+}
+
+int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
+	FILE *out;
+	//FILE *in;
+
+  // Bitte Pfad und Dateinamen anpassen
+	out = fopen(filename_out, "w+t");
+	//in = fopen(filename_in, "r");
+
+   if(NULL == out) {
+      printf("Konnte Datei %s nicht öffnen!\n", filename_out);
+      return EXIT_FAILURE;
+   }
+
+	/*if (NULL == in) {
+		printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
+		return EXIT_FAILURE;
+	}*/
+
+	//char* zeile;
+	//char original_word[126];
+
+	unsigned int i;
+	//unsigned short n;
+	//int result;
+
+  char *histogram_string;
+	for (i = 0; i < *size; i++) {
+		// Hole cursor wo das original wort steht:
+		//unsigned int cursor = (*h[i]).cursor;
+		// gehe in File in zu der Cursor position
+		//fseek(in, cursor, SEEK_SET);
+		// lese zeichen bis Zeilenende
+		//fgets(original_word, 126, in);
+	
+	  histogram_string = getHistogramAsString(h[i]);
+	
+		// schreibe OriginalZeile		
+		fputs(histogram_string, out);
+		fputc('\n', out);
+		
+		//fputc(':', out);
+		//fputc(' ', out);
+
+		// Hole jedes Histogram	als String
+		//zeile = getHistogramAsString(h[i]);
+		//for (n = 0; n < 126; n++) {
+			//fputc(zeile[n], out);			
+		//}
+		//fputs(zeile, out);
+		//fputc('\n', out);
+	}
+
+	fclose(out);		
+	//fclose(in);
+
+	return 0;
+}
+
+void mmapTry(const char* filename) {
+
+    FILE *datei;
+   // Bitte Pfad und Dateinamen anpassen
+   datei = fopen(filename, "r");
+   
+  char* file_memory; 
+  int fd;
+  
+  fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
+	//printf("Ende in Datei: %d \n",ftell(datei));
+	
+	unsigned int length = ftell(datei);
+	fclose(datei);
+	
+	fd = open (filename, O_RDWR, S_IRUSR | S_IWUSR); 
+  
+  file_memory = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+  close (fd);
+  
+  char *zeile = (char*) malloc (sizeof(char)*126); 
+  int integer;
+  //sscanf (file_memory+4, "%d", &integer); 
+  //printf ("value: %d\n", integer); 
+  //sscanf (file_memory+0, "%s", zeile);
+  sscanf(file_memory+9, "%[^\n]", zeile);
+  printf ("value: %s\n", zeile); 
+  /*
+  char *c = (char*) malloc (sizeof(char));
+  int index = 0;
+  
+  do {
+    // Lese Zeichen bis \n erkannt wurde
+    sscanf(file_memory+index, "%c", c);
+    if (*c != '\n') {
+      printf("%c",*c);
+    }
+    index++;
+  } while (*c != '\n');*/
+  
+  //printf("\n%c\n",file_memory[1]);
+  
+  munmap (file_memory, length);
+}

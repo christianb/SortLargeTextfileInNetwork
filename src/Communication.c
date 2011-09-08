@@ -13,7 +13,6 @@ Histogram* referenzToRealData(Histogram** data, int size_data, int total_size) {
     //new_memory[]
   }
   
-  
  
   return new_memory;
 }

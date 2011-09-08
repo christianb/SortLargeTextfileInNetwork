@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
 	  totalTime = startTime;
   }
 	
-  const char* filename = "sortMe_1000000.txt";
+  const char* filename = "sortMe_100000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
 
@@ -208,7 +208,7 @@ int main (int argc, char *argv[]) {
   
     endTime = MPI_Wtime();
 	  timeUsed = endTime - totalTime;	
-
+	  
     printf("%d elements in array!\n",size_data);
     printf("time used to sort everything = %lf \n", timeUsed);
      
@@ -217,10 +217,22 @@ int main (int argc, char *argv[]) {
       printf("%d: cursor->%d\n", k, (*ref_data[k]).cursor);
     }*/
     
+    
+    startTime = MPI_Wtime();
+    
     //printHistogramArray(ref_data, size_data);
+    writeFile("out.txt", filename, ref_data, &size_data); // Klaartext
+    
+    endTime = MPI_Wtime();
+	  timeUsed = endTime - startTime;
+    printf("time used to write sorted data in output file: %lf \n", timeUsed);
+    
+    //_writeFile("out.txt", ref_data, &size_data); //Histogramme
     
     free(ref_data); // Array mit Pointern auf Histogramme
 	  //free(data); // Original
+	  
+	  //mmapTry("mmap.txt");
   }
 
 	
