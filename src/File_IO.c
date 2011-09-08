@@ -213,7 +213,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	//FILE *in;
 
   // Bitte Pfad und Dateinamen anpassen
-	out = fopen(filename_out, "w+t");
+	out = fopen(filename_out, "wb");
 	//in = fopen(filename_in, "r");
 
    if(NULL == out) {
@@ -237,7 +237,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
    /* Bitte Pfad und Dateinamen anpassen */
    datei = fopen(filename_in, "r");
    
-  char* file_memory; 
+  void* file_memory; 
   int fd;
   
   fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
@@ -251,7 +251,8 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
   file_memory = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
   close (fd);
   
-  char *zeile = (char*) malloc (sizeof(char)*126);
+  //char *zeile = (char*) malloc (sizeof(char)*126);
+  char zeile[126];
   //int integer;
   //sscanf (file_memory+4, "%d", &integer); 
   //printf ("value: %d\n", integer); 
@@ -261,7 +262,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
   //
 	
   //char *c = (char*) malloc (sizeof(char));
-  
+  int sumLetters = 0;
 	for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
 		unsigned int cursor = (*h[i]).cursor;
@@ -269,8 +270,8 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 		//sscanf (file_memory+cursor, "%s", zeile);
     //printf ("value: %s\n", zeile); 
 
-    sscanf(file_memory+cursor, "%[^\n]", zeile);
-		
+    //sscanf(file_memory+cursor, "%[^\n]", &zeile);
+		sumLetters = sumAllLetters(i, h);
 		
 		
 		
@@ -280,7 +281,10 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 		//fgets(original_word, 126, in);
 	
 		// schreibe OriginalZeile		
-		result = fputs(zeile, out);
+		//result = fputs(zeile, out);
+		char buffer[3] = { 'x' , 'y' , 'z' };
+		//fwrite ( buffer, 1, 10, out);
+		fwrite (file_memory+cursor , 1 , sumLetters , out );
 		fputc('\n', out);
 		//fputc(':', out);
 		//fputc(' ', out);
@@ -293,10 +297,10 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 		//fputs(zeile, out);
 		//fputc('\n', out);
 	}
-
+  //fputc(EOF, out);
 	fclose(out);		
 	//fclose(in);
-	free(zeile);
+	//free(zeile);
 	
 	munmap (file_memory, length);
 
@@ -404,4 +408,17 @@ void mmapTry(const char* filename) {
   //printf("\n%c\n",file_memory[1]);
   
   munmap (file_memory, length);
+}
+
+int sumAllLetters(unsigned int index, Histogram **h) {
+  int i;
+  int sum_letter;
+  int total_sum = 0;
+  
+  for (i = 0; i < 26; i++) {
+    sum_letter = getSumOfLetterCaseInsensitive(i, index, h);
+    total_sum += sum_letter;
+  }
+  
+  return total_sum;
 }
