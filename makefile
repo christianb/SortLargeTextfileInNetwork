@@ -1,9 +1,12 @@
 # This is a makefile created by Christian Bunk
-# Last update 02.05.2011
+# Last update 15.09.2011
 
 # Define C Compiler
-CC = mpicc
-CFLAGS = -Wall -Wextra -mpe=mpilog -O2
+# -mpe=mpilog
+CC = mpicc -mpe=mpilog
+
+# -DZeitmessung wenn angeschaltet wird die Zeit mit MPI_Wtime() gemessen
+CFLAGS = -Wall -Wextra -DZeitmessung
 
 # Files to be compiled
 OBJECTS = $(SRC)/Main.o \
