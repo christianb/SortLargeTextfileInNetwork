@@ -209,6 +209,7 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	return h;
 }
 
+/*
 int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
 	FILE *out;
 	//FILE *in;
@@ -221,12 +222,12 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
       printf("Konnte Datei %s nicht öffnen!\n", filename_out);
       return EXIT_FAILURE;
    }
-/*
+
 	if (NULL == in) {
 		printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
 		return EXIT_FAILURE;
 	}
-*/
+
 	//char* zeile;
 	//char original_word[126];
 
@@ -235,7 +236,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	int result;
 	
 	FILE *datei;
-   /* Bitte Pfad und Dateinamen anpassen */
+    Bitte Pfad und Dateinamen anpassen
    datei = fopen(filename_in, "r");
    
   char* file_memory; 
@@ -276,10 +277,10 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
     //fgets (&zeile, 100, file_memory+cursor);
     //sscanf(file_memory+cursor, "%[^\n]", &zeile);
     num = readMemory(file_memory+cursor, &zeile, 127);
-		/*sumLetters = sumAllLetters(i, h);
+		sumLetters = sumAllLetters(i, h);
 		if (sumLetters == 0) {
 		  printf("zero");
-		}*/
+		}
 		
 		
 		
@@ -316,7 +317,7 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	munmap (file_memory, length);
 
 	return 0;
-}
+}*/
 
 int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
 	FILE *out;
@@ -375,7 +376,7 @@ int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
 
 	return 0;
 }
-
+/*
 void mmapTry(const char* filename) {
 
     FILE *datei;
@@ -408,7 +409,7 @@ void mmapTry(const char* filename) {
   //sscanf (file_memory+0, "%s", zeile);
   sscanf(file_in, "%[^\n]", zeile);
   printf ("value: %s\n", zeile); 
-  /*
+  
   char *c = (char*) malloc (sizeof(char));
   int index = 0;
   
@@ -419,13 +420,13 @@ void mmapTry(const char* filename) {
       printf("%c",*c);
     }
     index++;
-  } while (*c != '\n');*/
+  } while (*c != '\n');
   
   //printf("\n%c\n",file_memory[1]);
   
   munmap (file_in, length);
-}
-
+}*/
+/*
 int sumAllLetters(unsigned int index, Histogram **h) {
   int i;
   int sum_letter;
@@ -438,7 +439,9 @@ int sumAllLetters(unsigned int index, Histogram **h) {
   
   return total_sum;
 }
+*/
 
+/*
 size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes) {
    size_t bytesRead = 0;
 
@@ -450,4 +453,4 @@ size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes) {
    //buffer[bytesRead + 1] = '\0';
 
    return bytesRead;
-}
+}*/

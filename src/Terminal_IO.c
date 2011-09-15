@@ -57,8 +57,8 @@ void printControlLines(Histogram **h, const char *file_in, int line){
 	datei = fopen(file_in, "r");
 
 	unsigned int cursor;
-  	fseek(datei, 0L, SEEK_END);
-  	unsigned int length = ftell(datei);
+  //fseek(datei, 0L, SEEK_END);
+  //unsigned int length = ftell(datei);
 	
 	cursor = (*h[(line - 1)]).cursor;
 	fseek(datei, cursor, SEEK_SET);
