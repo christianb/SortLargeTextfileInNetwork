@@ -77,7 +77,7 @@ int main (int argc, char *argv[]) {
   }
   #endif // Zeitmessung
 	
-  const char* filename = "sortMe.txt";
+  const char* filename = "/usr/local/sortMe.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
   
@@ -136,7 +136,7 @@ int main (int argc, char *argv[]) {
       int successor = getSuccessorOfNode(myRank, activeNodes, activeNodes_size);
       
       if (successor != -1) { // wenn es einen nachfolger gibt empfange und merge
-        printf("Prozess: %d empfaengt von Prozess: %d \n", myRank, successor);
+        //printf("Prozess: %d empfaengt von Prozess: %d \n", myRank, successor);
         unsigned int size_received; // Speichert die Anzahl der Elemente im Histogram
         
         //_printHistogramArray(data, size_data); // Zeigt Daten im Speicher (unsortiert): OK
@@ -187,16 +187,16 @@ int main (int argc, char *argv[]) {
 	  if (indexOfThisNodeInArray % 2 != 0) {
 	     // sende an Vorgänger
       int predecessor = getPredecessorOfNode(myRank, activeNodes, activeNodes_size);
-      printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
+      //printf("Prozess: %d sendet an Prozess: %d\n", myRank, predecessor);
       //printHistogramArray(ref_data, size_data);
       sendHistogram(predecessor, ref_data, size_data, &HISTOGRAM_TYPE);
       
-      printf("Prozess: %d hat gesendet\n",myRank);
+      //printf("Prozess: %d hat gesendet\n",myRank);
 
 			free(ref_data); // Array mit Pointern auf Histogramme
 			free(data); // Original
   
-      printf("MPI_Finalize() Prozess: %d \n", myRank);
+      //printf("MPI_Finalize() Prozess: %d \n", myRank);
       
       // DONE!
       MPI_Finalize();

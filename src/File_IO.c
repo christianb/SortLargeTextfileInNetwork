@@ -50,7 +50,7 @@ void addCursorToHistogram(Histogram *h, unsigned int index, unsigned int cursor)
 void init(Histogram* h, unsigned int index) {
 	h[index].cursor = -1;
 	short i;
-	for (i = 0; i < 53; i++) {
+	for (i = 0; i < 52; i++) {
 		h[index].letter[i] = 0;	
 	}
 }
