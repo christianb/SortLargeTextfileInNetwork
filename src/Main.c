@@ -50,7 +50,7 @@ int main (int argc, char *argv[]) {
   // Setup description of the 4 MPI_FLOAT fields x, y, z, velocity
   offsets[0] = 0;
   oldtypes[0] = MPI_UNSIGNED_CHAR;
-  blockcounts[0] = 53;
+  blockcounts[0] = 52;
 
   // Setup description of the 2 MPI_INT fields n, type 
   // Need to first figure offset by getting size of MPI_FLOAT 
