@@ -8,5 +8,6 @@
 #include "Histogram.h"
 
 void printHistogramArray(Histogram **h, int size);
+void printControlLines(Histogram **h, const char *file_in, int line);
 
 #endif /* TERMINAL_H */
