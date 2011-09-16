@@ -27,32 +27,11 @@ void sendHistogram(int node, Histogram **data, int size, MPI_Datatype *HISTOGRAM
 	// kopiere die Inhalte hinter den referenzen in einen neuen Speicherbereich.
 	Histogram *new_memory = referenzToRealData(data, size, size);
 	
-	/*
-	int k;
-    for (k = 0; k < size; k++) {
-      printf("%d: cursor->%d\n", k, new_memory[k].cursor);
-    }
-    */
-	
-	//Histogram *new_memory = data[0];
 	// Sende die Anzahl der Histogramme
 	MPI_Send (&size,1,MPI_INT,node,0,MPI_COMM_WORLD);
-	
-	/*int i;
-	for (i = 0; i < size; i++) {
-		// Sende das Histogram
-		
-		// Zuerst das Array mit den 52 Buchstaben
-		MPI_Send((*data[i]).letter, 52,MPI_UNSIGNED_CHAR,node,0,MPI_COMM_WORLD);
-
-		// Dann die Cursor position
-		MPI_Send(&((*data[i]).cursor), 1,MPI_INT,node,0,MPI_COMM_WORLD);
-	}*/
   
   MPI_Send(new_memory, size, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD);
   free(new_memory);
-  
-  //MPI_Type_free(&HISTOGRAM_TYPE);
   
 }
 
@@ -65,15 +44,9 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
 	MPI_Status status;
 
 	// Empfange die Anzahl der Histogramme
-	//*size_received = 0;
 	MPI_Recv (size_received,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
 	
-	// allokiere Speicher für die Histogramme
-	//Histogram *data = calloc(*size, sizeof(Histogram));
-	// Vergrößern den alten Speicherbereich.
-	unsigned int max_size = size_data + (*size_received);
-	//Histogram * data_received = malloc (sizeof(Histogram) * (*size_received) );
-	//data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + *size_received));     
+	unsigned int max_size = size_data + (*size_received);    
 	
 	// statt auf den unsortierten Daten ein realloc zu machen machen wir ein malloc und kopieren die Daten hinter den REferenzen dort hinein
 	// um anschließend an das ende die empfangenen Daten zu kopieren
@@ -81,53 +54,37 @@ Histogram* receiveHistogram(int node, unsigned int *size_received, Histogram *da
 	free(data); // Data wird jetzt frei gegeben
 	data = NULL;
   
-	/*
-	if (data !=NULL) {
-
-	  unsigned int i;
-	  for(i = size_data; i < (size_data+(*size_received)); i++) { // Die ursprünglichen Elemente werden nicht übverschrieben. Die neuen Elemente werden am Ende angehängt.
-		  // Empfange die Histogramme
-		  // Empfange die Buchstaben
-		  MPI_Recv (&(data[i].letter),52,MPI_UNSIGNED_CHAR,node,0,MPI_COMM_WORLD,&status);
-		
-		  // Empfange die Cursor Position
-		  MPI_Recv (&(data[i].cursor),1,MPI_INT,node,0,MPI_COMM_WORLD,&status); // TODO: gibt es MPI_UNSIGNED_INT???
-	  }
-	
-	  return data;
-	
-	} else {
-       free (data);
-       printf ("Error (re)allocating memory");
-       exit (1);
-  }*/
-  
-  //Histogram     h[NELEM], h_received[NELEM];
-  
-  //Histogram *_data = data;
   MPI_Recv(new_memory+size_data, *size_received, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
-  /*
-  Histogram *ref_data = data+size_data;
-  int k;
-    for (k = 0; k < (*size_received); k++) {
-      printf("%d: cursor->%d\n", k, ref_data[k].cursor);
-    }
-  */
-  /*
-  data = (Histogram*) realloc (data, sizeof(Histogram) * (size_data + *size_received));     
-        
-  unsigned int i;
-  unsigned int n;
-  for (i = 0; i < *size_received; i++) {
-    for (n = 0; n < 52; n++) {
-      data[i+size_data].letter[n] = data_received[i].letter[n];
-    }
-    data[i+size_data].cursor = data_received[i].cursor;
-  }*/
-  //free(data_received);
-  //MPI_Type_free(&HISTOGRAM_TYPE);
   
   return new_memory;
 	
 }
 
+void sendSortedHistogram(int node, int ranks, Histogram* data, int size, MPI_Datatype *HISTOGRAM_TYPE) {
+  int size_p = size / ranks;
+  
+  // Sende die Anzahl der Histogramme
+	MPI_Send (&size_p,1,MPI_INT,node,0,MPI_COMM_WORLD);
+  
+  // node = 2
+  // ranks = 4
+  // size = 100;
+  // size_p = 100 / 4 = 25 
+  // data+(3*25) = 75
+  
+  
+  MPI_Send(data+(node*size_p), size_p, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD);
+}
+
+Histogram* receiveSortedHistogram(int node, unsigned int *size_received, MPI_Datatype *HISTOGRAM_TYPE) {
+  MPI_Status status;
+
+	// Empfange die Anzahl der Histogramme
+	MPI_Recv (size_received,1,MPI_INT,node,0,MPI_COMM_WORLD,&status);
+	
+	Histogram *sorted = (Histogram*) malloc (sizeof(Histogram) * (*size_received));
+	
+	MPI_Recv(sorted, *size_received, *HISTOGRAM_TYPE, node, 0, MPI_COMM_WORLD, &status);
+	
+	return sorted;
+}

@@ -3,10 +3,10 @@
 
 # Define C Compiler
 # -mpe=mpilog
-CC = mpicc -mpe=mpilog
+CC = mpicc
 
 # -DZeitmessung wenn angeschaltet wird die Zeit mit MPI_Wtime() gemessen
-CFLAGS = -Wall -Wextra -O0
+CFLAGS = -Wall -Wextra -g -O0
 
 # Files to be compiled
 OBJECTS = $(SRC)/Main.o \

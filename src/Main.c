@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <mpi.h>
 
@@ -13,6 +14,7 @@ int getIndexOfNode(int node, short int *activeNodes, short int size);
 int getSuccessorOfNode(int pNr, short int *activeNodes, short int size);
 int getPredecessorOfNode(int pNr, short int *activeNodes, short int size);
 short int* deleteOddProcessNumber(short int *activeNodes, short int *activeNodes_size);
+char* my_itoa(int wert, int laenge);
 
 Histogram** initHistogramArray(Histogram *data, unsigned int *size) {
   // Erstelle ein Array mit Referenzen (Pointern) auf die Daten
@@ -77,7 +79,7 @@ int main (int argc, char *argv[]) {
   }
   #endif // Zeitmessung
 	
-  const char* filename = "/usr/local/sortMe.txt";
+  const char* filename = "sortMe_1000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
   
@@ -193,10 +195,31 @@ int main (int argc, char *argv[]) {
       
       //printf("Prozess: %d hat gesendet\n",myRank);
 
-			free(ref_data); // Array mit Pointern auf Histogramme
-			free(data); // Original
+			
   
       //printf("MPI_Finalize() Prozess: %d \n", myRank);
+      
+      free(data);
+      //data = (Histogram*) malloc (sizeof(Histogram));
+      //size_data = 0;
+      
+      unsigned int size_received;
+      // empfange teil der soriterten Daten (von Knoten Null) um diese partiel auf platte zu schreiben
+      data = receiveSortedHistogram(0, &size_received, &HISTOGRAM_TYPE);
+      Histogram **ref_data = initHistogramArray(data, &size_received);
+      //free(data);
+      //data = (Histogram*) malloc (sizeof(Histogram));
+      
+      char buffer[10] = {'o','u','t'};
+      char *myrank = my_itoa(myRank, 2);
+      //printf("%s\n",myrank);
+      strncat(buffer,myrank,2);
+      strncat(buffer,".txt",4);
+      printf("%s\n",buffer);
+      writeFile(buffer, filename, ref_data, &size_received); // Klaartext
+      
+      free(ref_data); // Array mit Pointern auf Histogramme
+			free(data); // Original
       
       // DONE!
       MPI_Finalize();
@@ -211,14 +234,27 @@ int main (int argc, char *argv[]) {
   
   if (myRank == 0) {
     //printHistogramArray(ref_data, size_data);
-    //writeFile("out.txt", filename, ref_data, &size_data); // Klaartext
     
-    printControlLines(ref_data, filename, 545146);
+    char buffer[10] = {'o','u','t'};
+    char *myrank = my_itoa(myRank, 2);
+    //printf("%s\n",myrank);
+    strncat(buffer,myrank,2);
+    strncat(buffer,".txt",4);
+    printf("%s\n",buffer);
+    unsigned int size_p0 = size_data/ranks;
+    writeFile(buffer, filename, ref_data, &size_p0); // Klaartext*/
+    
+    int node;
+    for (node = 1; node < ranks; node++) {
+      sendSortedHistogram(node, ranks, data, size_data, &HISTOGRAM_TYPE);
+    }
+    
+    /*printControlLines(ref_data, filename, 545146);
     
     int index;
     for (index = 10; index <= 10000000; index*=10) {
       printControlLines(ref_data, filename, index);
-    }
+    }*/
     
     free(ref_data); // Array mit Pointern auf Histogramme
 	  
@@ -307,5 +343,18 @@ int getPredecessorOfNode(int pNr, short int *activeNodes, short int size) {
     }
     
     return -1;
+}
+
+char* my_itoa(int wert, int laenge) {
+  char *ret = (char*) malloc ((laenge+1) * sizeof(char));
+  int i;
+  
+  for (i = 0; i < laenge; i++) {
+    ret[laenge-i-1] = (wert % 10) + 48;
+    wert = wert / 10;
+  }
+  
+  ret[laenge]='\0';
+  return ret;
 }
 

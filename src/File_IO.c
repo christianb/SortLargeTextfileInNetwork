@@ -209,116 +209,44 @@ Histogram* readFile(const char* filename, const int myRank, const int numRank, H
 	return h;
 }
 
-/*
+
 int writeFile(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
 	FILE *out;
-	//FILE *in;
+	FILE *in;
 
-  // Bitte Pfad und Dateinamen anpassen
 	out = fopen(filename_out, "wt");
-	//in = fopen(filename_in, "r");
+	in = fopen(filename_in, "r");
 
-   if(NULL == out) {
-      printf("Konnte Datei %s nicht öffnen!\n", filename_out);
-      return EXIT_FAILURE;
-   }
+  if(NULL == out) {
+    printf("Konnte Datei %s nicht öffnen!\n", filename_out);
+    return EXIT_FAILURE;
+  }
 
 	if (NULL == in) {
-		printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
+    printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
 		return EXIT_FAILURE;
 	}
 
-	//char* zeile;
-	//char original_word[126];
-
-	unsigned int i;
-	//unsigned short n;
-	int result;
-	
-	FILE *datei;
-    Bitte Pfad und Dateinamen anpassen
-   datei = fopen(filename_in, "r");
-   
-  char* file_memory; 
-  int fd;
-  
-  fseek(datei, 0L, SEEK_END); // Setze den Cursor ans Ende der Datei
-	//printf("Ende in Datei: %d \n",ftell(datei));
-	
-	unsigned int length = ftell(datei);
-	fclose(datei);
-	
-	fd = open (filename_in, O_RDWR, S_IRUSR | S_IWUSR); 
-  
-  file_memory = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
-  //madvise(file_memory, length, MADV_SEQUENTIAL);
-  
-  //char *zeile = (char*) malloc (sizeof(char)*126);
-  char zeile[127];
-  //int integer;
-  //sscanf (file_memory+4, "%d", &integer); 
-  //printf ("value: %d\n", integer); 
-  //sscanf (file_memory+4, "%s", &zeile);
-  //printf ("value: %s\n", zeile); 
-  
-	
-  //char *c = (char*) malloc (sizeof(char));
-  int sumLetters = 0;
-  unsigned int cursor;
-  char c = '\n';
-  size_t num = 0;
+  char zeile[126];
+  unsigned int i;
+  int cursor;
 	for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
 		cursor = (*h[i]).cursor;
-		
-		//sscanf (file_memory+cursor, "%s", zeile);
-    //printf ("value: %s\n", zeile); 
 
-    //fgets (&zeile, 100, file_memory+cursor);
-    //sscanf(file_memory+cursor, "%[^\n]", &zeile);
-    num = readMemory(file_memory+cursor, &zeile, 127);
-		sumLetters = sumAllLetters(i, h);
-		if (sumLetters == 0) {
-		  printf("zero");
-		}
-		
-		
-		
-		// gehe in File in zu der Cursor position
-		//fseek(in, cursor, SEEK_SET);
+    // Setze Cursor an position
+		fseek(in, cursor, SEEK_SET);
 		// lese zeichen bis Zeilenende
-		//fgets(original_word, 126, in);
+		fgets(zeile, 126, in);
 	
-		// schreibe OriginalZeile		
-		//result = fputs(zeile, out);
-		//char buffer[3] = { 'x' , 'y' , 'z' };
-		//fwrite ( zeile, 1, num, out);
-		fwrite (file_memory+cursor, 1 , num , out ); // was ist mit den leer
-		//memcpy(out, file_memory+cursor, sizeof(char)*sumLetters);
-		//putc('\n', out);
-		fwrite (&c, 1, 1, out);
-		//fputc(':', out);
-		//fputc(' ', out);
-
-		// Hole jedes Histogram	als String
-		//zeile = getHistogramAsString(h[i]);
-		//for (n = 0; n < 126; n++) {
-			//fputc(zeile[n], out);			
-		//}
-		//fputs(zeile, out);
-		//fputc('\n', out);
+		fputs(zeile, out);
 	}
-  //fputc(EOF, out);
-  close (fd);
 	fclose(out);		
-	//fclose(in);
-	//free(zeile);
-	
-	munmap (file_memory, length);
+	fclose(in);
 
 	return 0;
-}*/
-
+}
+/*
 int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
 	FILE *out;
 	//FILE *in;
@@ -332,10 +260,10 @@ int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
       return EXIT_FAILURE;
    }
 
-	/*if (NULL == in) {
+  if (NULL == in) {
 		printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
 		return EXIT_FAILURE;
-	}*/
+	}
 
 	//char* zeile;
 	//char original_word[126];
@@ -376,7 +304,7 @@ int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
 
 	return 0;
 }
-/*
+
 void mmapTry(const char* filename) {
 
     FILE *datei;
