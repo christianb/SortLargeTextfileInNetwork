@@ -246,65 +246,64 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 
 	return 0;
 }
-/*
-int _writeFile(const char *filename_out, Histogram **h, unsigned int *size) {
-	FILE *out;
-	//FILE *in;
 
-  // Bitte Pfad und Dateinamen anpassen
-	out = fopen(filename_out, "w+t");
-	//in = fopen(filename_in, "r");
-
-   if(NULL == out) {
-      printf("Konnte Datei %s nicht öffnen!\n", filename_out);
-      return EXIT_FAILURE;
-   }
-
-  if (NULL == in) {
-		printf("Konnte Datei %s nicht oeffnen!\n", filename_in);
-		return EXIT_FAILURE;
+int writeFileFromMemory(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
+  FILE *datei;
+  datei = fopen(filename_in, "r");
+  
+  fseek(datei, 0L, SEEK_END); 
+	
+	unsigned int length = ftell(datei);
+	
+	
+	unsigned int length_left = length / 2;
+	fseek(datei, length_left, SEEK_SET);
+	
+	char c;
+	// gehe nun bis nächstes newline gefunden wurde
+	while( (c = fgetc(datei)) != '\n') {
+	  ;
 	}
+	
+	length_left = ftell(datei)-1;
+	fclose(datei);
+	
+	unsigned length_right = length_left+1;
+	/*
 
-	//char* zeile;
-	//char original_word[126];
-
-	unsigned int i;
-	//unsigned short n;
-	//int result;
-
-  char *histogram_string;
-	for (i = 0; i < *size; i++) {
+		// after line break has found, the next char is the first char in next line
+		// go back to before the line break.
+		to = ftell(datei);
+	
+	fd = open (filename, O_RDWR, S_IRUSR | S_IWUSR); 
+  
+  file_in = mmap (0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);*/
+  printf("length_left: %d\n", length_left);
+  printf("length_right: %d\n", length_right);
+  
+  int i;
+  int cursor;
+  for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
-		//unsigned int cursor = (*h[i]).cursor;
-		// gehe in File in zu der Cursor position
-		//fseek(in, cursor, SEEK_SET);
-		// lese zeichen bis Zeilenende
-		//fgets(original_word, 126, in);
-	
-	  histogram_string = getHistogramAsString(h[i]);
-	
-		// schreibe OriginalZeile		
-		fputs(histogram_string, out);
-		fputc('\n', out);
+		cursor = (*h[i]).cursor;
+		printf("cursor: %d ",cursor);
 		
-		//fputc(':', out);
-		//fputc(' ', out);
-
-		// Hole jedes Histogram	als String
-		//zeile = getHistogramAsString(h[i]);
-		//for (n = 0; n < 126; n++) {
-			//fputc(zeile[n], out);			
-		//}
-		//fputs(zeile, out);
-		//fputc('\n', out);
+		if (cursor <= length_left) {
+		  printf(" left\n");
+		  // mappe linke seite
+		  file_in = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+		  // TODO: Datei in zwei Teile aufteilen
+		} else {
+		  printf(" right\n");
+		  // mappe rechte seite
+		  file_in = mmap (0, length_right, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+		}
+		
 	}
-
-	fclose(out);		
-	//fclose(in);
-
-	return 0;
+  
+  return 0;
 }
-
+/*
 void mmapTry(const char* filename) {
 
     FILE *datei;
