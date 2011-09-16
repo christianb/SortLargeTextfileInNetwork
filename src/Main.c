@@ -79,6 +79,7 @@ int main (int argc, char *argv[]) {
   }
   #endif // Zeitmessung
 	
+  //const char* filename = "/usr/local/sortMe.txt";
   const char* filename = "sortMe_1000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
@@ -210,7 +211,8 @@ int main (int argc, char *argv[]) {
       //free(data);
       //data = (Histogram*) malloc (sizeof(Histogram));
       
-      char buffer[10] = {'o','u','t'};
+      
+      char buffer[15] = {'/','t','m','p','/','o','u','t'};
       char *myrank = my_itoa(myRank, 2);
       //printf("%s\n",myrank);
       strncat(buffer,myrank,2);
@@ -235,7 +237,7 @@ int main (int argc, char *argv[]) {
   if (myRank == 0) {
     //printHistogramArray(ref_data, size_data);
     
-    char buffer[10] = {'o','u','t'};
+    char buffer[15] = {'/','t','m','p','/','o','u','t'};
     char *myrank = my_itoa(myRank, 2);
     //printf("%s\n",myrank);
     strncat(buffer,myrank,2);
