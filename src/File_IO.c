@@ -12,7 +12,7 @@ void addCharToHistogram(Histogram *h, unsigned int index, char c);
 void addCursorToHistogram(Histogram *h, unsigned int index, unsigned int cursor);
 
 Histogram* readFileFromTo(FILE *datei, const unsigned int from, const unsigned int to, Histogram *h, unsigned int *size);
-size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes);
+size_t readMemory(char *ptrStart/*, char *buffer*/, size_t maxBytes);
 
 /**
  * Fügt ein Charakter dem Histogram an einer Position hinzu.
@@ -247,18 +247,35 @@ int writeFile(const char *filename_out, const char *filename_in, Histogram **h, 
 	return 0;
 }
 
-int writeFileFromMemory(const char *filename_out, const char *filename_in, Histogram **h, unsigned int *size) {
-  FILE *datei;
-  datei = fopen(filename_in, "r");
+int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram **h, unsigned int *size) {
+  FILE *datei_left = fopen("sortMe_left.txt", "r");
   
-  fseek(datei, 0L, SEEK_END); 
+  FILE *datei_right = fopen("sortMe_right.txt", "r");
+  
+  // original datei
+  FILE *origin = fopen(fOrigin, "r");
+  
+  fseek(datei_left, 0L, SEEK_END);
 	
-	unsigned int length = ftell(datei);
+	// Bestimme die Laenge der linken Datei in Bytes
+	unsigned int length_left = ftell(datei_left);
 	
+	fseek(datei_left, length_left, SEEK_SET); // setze den cursor wieder an den anfang
 	
-	unsigned int length_left = length / 2;
-	fseek(datei, length_left, SEEK_SET);
+	// Bestimme die Länge der original Datei
+	fseek(origin, 0L, SEEK_END);
+	unsigned int length_origin = ftell(origin);
 	
+	// Berechne die realitve Länge von der rechten Datei
+	unsigned int length_right = length_origin - length_left;
+	
+	//unsigned int left_start = 0;
+	//unsigned int left_end = length_left;
+	
+	//unsigned int right_start = left_end+1;
+	//unsigned int right_end = length_origin;
+	
+	/*
 	char c;
 	// gehe nun bis nächstes newline gefunden wurde
 	while( (c = fgetc(datei)) != '\n') {
@@ -267,8 +284,8 @@ int writeFileFromMemory(const char *filename_out, const char *filename_in, Histo
 	
 	length_left = ftell(datei)-1;
 	fclose(datei);
-	
-	unsigned length_right = length_left+1;
+	*/
+	//unsigned length_right = length_left+1;
 	/*
 
 		// after line break has found, the next char is the first char in next line
@@ -281,24 +298,76 @@ int writeFileFromMemory(const char *filename_out, const char *filename_in, Histo
   printf("length_left: %d\n", length_left);
   printf("length_right: %d\n", length_right);
   
-  int i;
-  int cursor;
+  unsigned int i;
+  unsigned int cursor;
+  bool isLeftMapped = FALSE;
+  bool isRightMapped = FALSE;
+  
+  size_t num = 0;
+  char zeile[127];
+  
+  int f_left = open ("sortMe_left.txt", O_RDWR, S_IRUSR | S_IWUSR);
+  int f_right = open ("sortMe_right.txt", O_RDWR, S_IRUSR | S_IWUSR);
+  
+  fclose(datei_left);
+  fclose(datei_right);
+  fclose(origin);
+  
+  FILE *out = fopen(filename_out, "wt");
+  
+  char* file_memory;
+  
   for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
 		cursor = (*h[i]).cursor;
-		printf("cursor: %d ",cursor);
+		//printf("cursor: %d ",cursor);
 		
 		if (cursor <= length_left) {
-		  printf(" left\n");
-		  // mappe linke seite
-		  file_in = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
-		  // TODO: Datei in zwei Teile aufteilen
+		  //printf(" left\n");
+		  if (isRightMapped == TRUE) {
+		    // unmapp right
+		    munmap (datei_right, length_right);
+		    isRightMapped = FALSE;
+		  }
+		  
+		  if (isLeftMapped == FALSE) {
+		    // mappe linke seite
+		    file_memory = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, f_left, 0);
+		    isLeftMapped = TRUE;
+		  }
 		} else {
-		  printf(" right\n");
-		  // mappe rechte seite
-		  file_in = mmap (0, length_right, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0); 
+		  if (isLeftMapped == TRUE) {
+		    // unmapp left
+		    munmap (datei_left, length_left);
+		    isLeftMapped = FALSE;
+		  }
+		  
+		  if (isRightMapped == FALSE) {
+		    // mappe rechte seite
+		    file_memory = mmap (0, length_right, PROT_READ | PROT_WRITE, MAP_SHARED, f_right, 0);
+		    cursor -= length_origin;
+		    isRightMapped = TRUE;
+		  }
 		}
 		
+		num = readMemory(file_memory+cursor, 127);
+		// Der Cursor muss für die rechte seite ja auch auf die 1GB File passen, daher muss der Cursor angepasst werden
+		fwrite (file_memory+cursor, 1 , num , out );
+		//fwrite (&c, 1, 1, out);
+	}
+	
+	fclose(out);
+	close(f_left);
+	close(f_right);
+	
+	if (isLeftMapped == TRUE) {
+	  // unmapp left
+		munmap (datei_left, length_left);
+  }
+  
+  if (isRightMapped == TRUE) {
+    // unmapp right
+    munmap (datei_right, length_right);
 	}
   
   return 0;
@@ -368,8 +437,8 @@ int sumAllLetters(unsigned int index, Histogram **h) {
 }
 */
 
-/*
-size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes) {
+
+size_t readMemory(char *ptrStart/*, char *buffer*/, size_t maxBytes) {
    size_t bytesRead = 0;
 
    while (bytesRead < maxBytes - 1 && ptrStart[bytesRead] != '\n') {
@@ -380,4 +449,4 @@ size_t readMemory(char *ptrStart, char *buffer, size_t maxBytes) {
    //buffer[bytesRead + 1] = '\0';
 
    return bytesRead;
-}*/
+}
