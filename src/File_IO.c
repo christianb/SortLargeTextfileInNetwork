@@ -326,8 +326,8 @@ int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram
   //close(f_left);
   file_memory = mmap (0, length_right, PROT_READ | PROT_WRITE, MAP_SHARED, f_right, 0);
   unmap_result = munmap (file_memory, length_right);
-  file_memory = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, f_left, 0);*/
-  
+  file_memory = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, f_left, 0);
+  */
   FILE *out = fopen(filename_out, "wt");
   
   
