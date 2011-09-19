@@ -6,7 +6,7 @@
 CC = mpicc
 
 # -DZeitmessung wenn angeschaltet wird die Zeit mit MPI_Wtime() gemessen
-CFLAGS = -Wall -Wextra -g -O0
+CFLAGS = -Wall -Wextra -g -O0 -DZeitmessung
 
 # Files to be compiled
 OBJECTS = $(SRC)/Main.o \

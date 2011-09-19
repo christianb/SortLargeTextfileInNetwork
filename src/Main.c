@@ -79,8 +79,8 @@ int main (int argc, char *argv[]) {
   }
   #endif // Zeitmessung
 	
-  //const char* filename = "/usr/local/sortMe.txt";
-  const char* filename = "sortMe_1000.txt";
+  const char* filename = "/usr/local/sortMe.txt";
+  //const char* filename = "sortMe_1000.txt";
 	// Lese Datei und bekomme das die Histogramme zurück.
 	data = readFile(filename, myRank, ranks, data, &size_data);
   
@@ -124,7 +124,20 @@ int main (int argc, char *argv[]) {
 
   // Anzahl der Elemente
   short int activeNodes_size = ranks;
-
+  /*
+  #ifdef Zeitmessung 
+  if (myRank == 0) {
+    startTime = MPI_Wtime();
+    printf("Schreibe Daten ... ");
+    if (myRank == 0) writeFileFromMemory("/tmp/out.txt", filename, ref_data, &size_data);
+    endTime = MPI_Wtime();
+	  timeUsed = endTime - startTime;
+    printf("DONE, time used: %lf\n",timeUsed);
+     
+  }
+  #endif
+  */
+  
   //Histogram **sorted_merged_Histogram = ref_data;
 
   // solange wie mehr als 1 Element im activeNodes Array vorhanden ist
@@ -218,7 +231,8 @@ int main (int argc, char *argv[]) {
       strncat(buffer,myrank,2);
       strncat(buffer,".txt",4);
       printf("%s\n",buffer);
-      writeFile(buffer, filename, ref_data, &size_received); // Klaartext
+      //writeFile(buffer, filename, ref_data, &size_received); // Klaartext
+      writeFileFromMemory(buffer, filename, ref_data, &size_received);
       
       free(ref_data); // Array mit Pointern auf Histogramme
 			free(data); // Original
@@ -235,6 +249,10 @@ int main (int argc, char *argv[]) {
   
   
   if (myRank == 0) {
+    #ifdef Zeitmessung 
+      startTime = MPI_Wtime();
+    #endif
+    
     //printHistogramArray(ref_data, size_data);
     
     char buffer[15] = {'/','t','m','p','/','o','u','t'};
@@ -244,19 +262,28 @@ int main (int argc, char *argv[]) {
     strncat(buffer,".txt",4);
     printf("%s\n",buffer);
     unsigned int size_p0 = size_data/ranks;
-    writeFile(buffer, filename, ref_data, &size_p0); // Klaartext*/
+    //writeFile(buffer, filename, ref_data, &size_p0); // Klaartext
+    writeFileFromMemory(buffer, filename, ref_data, &size_p0);
+    
+    #ifdef Zeitmessung 
+      endTime = MPI_Wtime();
+	    timeUsed = endTime - startTime;
+      printf("DONE, time used: %lf\n",timeUsed);
+    #endif
     
     int node;
     for (node = 1; node < ranks; node++) {
       sendSortedHistogram(node, ranks, data, size_data, &HISTOGRAM_TYPE);
     }
     
-    /*printControlLines(ref_data, filename, 545146);
+    printControlLines(ref_data, filename, 545146);
     
     int index;
     for (index = 10; index <= 10000000; index*=10) {
       printControlLines(ref_data, filename, index);
-    }*/
+    }
+    
+    
     
     free(ref_data); // Array mit Pointern auf Histogramme
 	  

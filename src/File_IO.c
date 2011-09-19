@@ -309,14 +309,29 @@ int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram
   int f_left = open ("sortMe_left.txt", O_RDWR, S_IRUSR | S_IWUSR);
   int f_right = open ("sortMe_right.txt", O_RDWR, S_IRUSR | S_IWUSR);
   
+  char* file_memory_left;
+  char* file_memory_right;
+  char* file_memory;
+  
   fclose(datei_left);
   fclose(datei_right);
   fclose(origin);
   
+  //size_t page_size = (size_t) sysconf (_SC_PAGESIZE);
+  
+  // TEST
+  /*
+  file_memory = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, f_left, 0);
+  int unmap_result = munmap (file_memory, length_left);
+  //close(f_left);
+  file_memory = mmap (0, length_right, PROT_READ | PROT_WRITE, MAP_SHARED, f_right, 0);
+  unmap_result = munmap (file_memory, length_right);
+  file_memory = mmap (0, length_left, PROT_READ | PROT_WRITE, MAP_SHARED, f_left, 0);*/
+  
   FILE *out = fopen(filename_out, "wt");
   
-  char* file_memory;
   
+  char c = '\n';
   for (i = 0; i < *size; i++) {
 		// Hole cursor wo das original wort steht:
 		cursor = (*h[i]).cursor;
@@ -326,7 +341,7 @@ int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram
 		  //printf(" left\n");
 		  if (isRightMapped == TRUE) {
 		    // unmapp right
-		    munmap (datei_right, length_right);
+		    munmap(file_memory, length_right);
 		    isRightMapped = FALSE;
 		  }
 		  
@@ -338,14 +353,14 @@ int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram
 		} else {
 		  if (isLeftMapped == TRUE) {
 		    // unmapp left
-		    munmap (datei_left, length_left);
+		    munmap (file_memory, length_left);
 		    isLeftMapped = FALSE;
 		  }
 		  
 		  if (isRightMapped == FALSE) {
 		    // mappe rechte seite
 		    file_memory = mmap (0, length_right, PROT_READ | PROT_WRITE, MAP_SHARED, f_right, 0);
-		    cursor -= length_origin;
+		    cursor = length_origin - cursor;
 		    isRightMapped = TRUE;
 		  }
 		}
@@ -353,7 +368,7 @@ int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram
 		num = readMemory(file_memory+cursor, 127);
 		// Der Cursor muss für die rechte seite ja auch auf die 1GB File passen, daher muss der Cursor angepasst werden
 		fwrite (file_memory+cursor, 1 , num , out );
-		//fwrite (&c, 1, 1, out);
+		fwrite (&c, 1, 1, out);
 	}
 	
 	fclose(out);
@@ -362,12 +377,12 @@ int writeFileFromMemory(const char *filename_out, const char *fOrigin, Histogram
 	
 	if (isLeftMapped == TRUE) {
 	  // unmapp left
-		munmap (datei_left, length_left);
+		munmap (file_memory, length_left);
   }
   
   if (isRightMapped == TRUE) {
     // unmapp right
-    munmap (datei_right, length_right);
+    munmap (file_memory, length_right);
 	}
   
   return 0;
