@@ -216,7 +216,7 @@ int main (int argc, char *argv[]) {
       free(data);
       //data = (Histogram*) malloc (sizeof(Histogram));
       //size_data = 0;
-       /*
+      /*
       unsigned int size_received;
       // empfange teil der soriterten Daten (von Knoten Null) um diese partiel auf platte zu schreiben
       data = receiveSortedHistogram(0, &size_received, &HISTOGRAM_TYPE);
@@ -231,8 +231,19 @@ int main (int argc, char *argv[]) {
       strncat(buffer,myrank,2);
       strncat(buffer,".txt",4);
       printf("%s\n",buffer);
+      
+      #ifdef Zeitmessung 
+      startTime = MPI_Wtime();
+      #endif
+      
       writeFile(buffer, filename, ref_data, &size_received); // Klaartext
       //writeFileFromMemory(buffer, filename, ref_data, &size_received);
+      
+      #ifdef Zeitmessung 
+      endTime = MPI_Wtime();
+	    timeUsed = endTime - startTime;
+      printf("Prozess: %d DONE, time used: %lf\n",myRank, timeUsed);
+      #endif
       
       free(ref_data); // Array mit Pointern auf Histogramme
 			free(data); // Original
@@ -249,6 +260,12 @@ int main (int argc, char *argv[]) {
   
   
   if (myRank == 0) {
+    /*int node;
+    for (node = 1; node < ranks; node++) {
+      sendSortedHistogram(node, ranks, data, size_data, &HISTOGRAM_TYPE);
+    }
+    
+    
     #ifdef Zeitmessung 
       startTime = MPI_Wtime();
     #endif
@@ -262,22 +279,20 @@ int main (int argc, char *argv[]) {
     strncat(buffer,".txt",4);
     printf("%s\n",buffer);
     unsigned int size_p0 = size_data/ranks;
-    //writeFile(buffer, filename, ref_data, &size_p0); // Klaartext
-    writeFile("/tmp/out.txt", filename, ref_data, &size_data); // Klaartext
     printf("Schreibe In Datei\n");
+    writeFile(buffer, filename, ref_data, &size_p0); // Klaartext
+    //writeFile("/tmp/out.txt", filename, ref_data, &size_data); // Klaartext
+    
     //writeFileFromMemory(buffer, filename, ref_data, &size_data);
     
     #ifdef Zeitmessung 
       endTime = MPI_Wtime();
 	    timeUsed = endTime - startTime;
-      printf("DONE, time used: %lf\n",timeUsed);
+      printf("Prozess 0 DONE, time used: %lf\n",timeUsed);
     #endif
-    /*
-    int node;
-    for (node = 1; node < ranks; node++) {
-      sendSortedHistogram(node, ranks, data, size_data, &HISTOGRAM_TYPE);
-    }
     */
+    
+    
     printControlLines(ref_data, filename, 545146);
     
     int index;
